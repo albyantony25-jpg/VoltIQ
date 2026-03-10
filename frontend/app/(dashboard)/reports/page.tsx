@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 
-const PDFViewer = dynamic(() => import("@react-pdf/renderer").then((mod) => mod.PDFViewer), { ssr: false })
-const PDFDownloadLink = dynamic(() => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink), { ssr: false })
-import { EnergyReport } from "@/components/reports/EnergyReport"
-import { Download, FileText, Loader2, RefreshCw } from "lucide-react"
+const ReportPDFLink = dynamic(() => import("@/components/reports/ReportPDFLink"), { ssr: false })
+const ReportPDFViewer = dynamic(() => import("@/components/reports/ReportPDFViewer"), { ssr: false })
+import { FileText, Loader2, RefreshCw, Download } from "lucide-react"
 
 export default function ReportsPage() {
     const MOCK_HOME_ID = "00000000-0000-0000-0000-000000000000"
@@ -77,23 +76,7 @@ export default function ReportsPage() {
                     </button>
 
                     {reportData && (
-                        <PDFDownloadLink
-                            document={<EnergyReport data={reportData} />}
-                            fileName={`VoltIQ-Report-${month.replace(" ", "-").toLowerCase()}.pdf`}
-                            className="w-full bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2 mt-2 border border-emerald-500/20"
-                        >
-                            {/* @ts-ignore */}
-                            {({ blob, url, loading, error }) =>
-                                loading ? (
-                                    <><Loader2 className="w-4 h-4 animate-spin" /> Rendering PDF...</>
-                                ) : (
-                                    <>
-                                        <Download className="w-4 h-4" />
-                                        Download PDF
-                                    </>
-                                )
-                            }
-                        </PDFDownloadLink>
+                        <ReportPDFLink reportData={reportData} month={month} />
                     )}
                 </div>
 
@@ -115,9 +98,7 @@ export default function ReportsPage() {
             {/* Main Preview Area */}
             <div className="flex-1 bg-slate-950 rounded-xl overflow-hidden relative shadow-inner">
                 {reportData ? (
-                    <PDFViewer className="w-full h-full border-none">
-                        <EnergyReport data={reportData} />
-                    </PDFViewer>
+                    <ReportPDFViewer reportData={reportData} />
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 p-8 text-center max-w-sm mx-auto">
                         <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mb-6 border border-slate-800">
