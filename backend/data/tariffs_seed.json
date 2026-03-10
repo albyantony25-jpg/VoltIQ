@@ -1,0 +1,911 @@
+[
+  {
+    "id": "MAH-01",
+    "state": "Maharashtra",
+    "provider": "MSEDCL",
+    "fixed_charge_inr": 110.0,
+    "fuel_surcharge_pct": 0.05,
+    "electricity_duty_pct": 0.16,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 2.00
+      },
+      {
+        "from": 101,
+        "to": 300,
+        "rate": 4.50
+      },
+      {
+        "from": 301,
+        "to": 500,
+        "rate": 8.00
+      },
+      {
+        "from": 500,
+        "rate": 11.00
+      }
+    ]
+  },
+  {
+    "id": "KAR-01",
+    "state": "Karnataka",
+    "provider": "BESCOM",
+    "fixed_charge_inr": 100.0,
+    "fuel_surcharge_pct": 0.04,
+    "electricity_duty_pct": 0.09,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 4.15
+      },
+      {
+        "from": 51,
+        "to": 100,
+        "rate": 5.60
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 7.15
+      },
+      {
+        "from": 201,
+        "rate": 8.20
+      }
+    ]
+  },
+  {
+    "id": "DEL-01",
+    "state": "Delhi",
+    "provider": "BSES",
+    "fixed_charge_inr": 50.0,
+    "fuel_surcharge_pct": 0.08,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 200,
+        "rate": 3.00
+      },
+      {
+        "from": 201,
+        "to": 400,
+        "rate": 4.50
+      },
+      {
+        "from": 401,
+        "to": 800,
+        "rate": 6.50
+      },
+      {
+        "from": 801,
+        "rate": 7.00
+      }
+    ]
+  },
+  {
+    "id": "TN-01",
+    "state": "Tamil Nadu",
+    "provider": "TANGEDCO",
+    "fixed_charge_inr": 0.0,
+    "fuel_surcharge_pct": 0.03,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 0.00
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 2.25
+      },
+      {
+        "from": 201,
+        "to": 400,
+        "rate": 4.50
+      },
+      {
+        "from": 401,
+        "to": 500,
+        "rate": 6.00
+      },
+      {
+        "from": 501,
+        "rate": 8.00
+      }
+    ]
+  },
+  {
+    "id": "UP-01",
+    "state": "Uttar Pradesh",
+    "provider": "UPPCL",
+    "fixed_charge_inr": 110.0,
+    "fuel_surcharge_pct": 0.05,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 150,
+        "rate": 5.50
+      },
+      {
+        "from": 151,
+        "to": 300,
+        "rate": 6.00
+      },
+      {
+        "from": 301,
+        "to": 500,
+        "rate": 6.50
+      },
+      {
+        "from": 501,
+        "rate": 7.00
+      }
+    ]
+  },
+  {
+    "id": "KER-01",
+    "state": "Kerala",
+    "provider": "KSEB",
+    "fixed_charge_inr": 60.0,
+    "fuel_surcharge_pct": 0.05,
+    "electricity_duty_pct": 0.10,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 3.15
+      },
+      {
+        "from": 51,
+        "to": 100,
+        "rate": 3.95
+      },
+      {
+        "from": 101,
+        "to": 150,
+        "rate": 5.00
+      },
+      {
+        "from": 151,
+        "to": 200,
+        "rate": 6.80
+      },
+      {
+        "from": 201,
+        "to": 250,
+        "rate": 8.00
+      },
+      {
+        "from": 251,
+        "rate": 9.00
+      }
+    ]
+  },
+  {
+    "id": "WB-01",
+    "state": "West Bengal",
+    "provider": "WBSEDCL",
+    "fixed_charge_inr": 15.0,
+    "fuel_surcharge_pct": 0.03,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 102,
+        "rate": 5.26
+      },
+      {
+        "from": 103,
+        "to": 180,
+        "rate": 5.97
+      },
+      {
+        "from": 181,
+        "to": 300,
+        "rate": 6.97
+      },
+      {
+        "from": 301,
+        "to": 600,
+        "rate": 7.31
+      },
+      {
+        "from": 601,
+        "to": 900,
+        "rate": 7.58
+      },
+      {
+        "from": 901,
+        "rate": 8.99
+      }
+    ]
+  },
+  {
+    "id": "GUJ-01",
+    "state": "Gujarat",
+    "provider": "DGVCL",
+    "fixed_charge_inr": 15.0,
+    "fuel_surcharge_pct": 0.04,
+    "electricity_duty_pct": 0.15,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 3.05
+      },
+      {
+        "from": 51,
+        "to": 100,
+        "rate": 3.50
+      },
+      {
+        "from": 101,
+        "to": 250,
+        "rate": 4.15
+      },
+      {
+        "from": 251,
+        "rate": 5.20
+      }
+    ]
+  },
+  {
+    "id": "AP-01",
+    "state": "Andhra Pradesh",
+    "provider": "APEPDCL",
+    "fixed_charge_inr": 0.0,
+    "fuel_surcharge_pct": 0.02,
+    "electricity_duty_pct": 0.06,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 30,
+        "rate": 1.90
+      },
+      {
+        "from": 31,
+        "to": 75,
+        "rate": 3.00
+      },
+      {
+        "from": 76,
+        "to": 125,
+        "rate": 4.50
+      },
+      {
+        "from": 126,
+        "to": 225,
+        "rate": 6.00
+      },
+      {
+        "from": 226,
+        "to": 400,
+        "rate": 8.75
+      },
+      {
+        "from": 401,
+        "rate": 9.75
+      }
+    ]
+  },
+  {
+    "id": "TS-01",
+    "state": "Telangana",
+    "provider": "TSSPDCL",
+    "fixed_charge_inr": 10.0,
+    "fuel_surcharge_pct": 0.02,
+    "electricity_duty_pct": 0.06,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 1.45
+      },
+      {
+        "from": 51,
+        "to": 100,
+        "rate": 2.60
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 4.30
+      },
+      {
+        "from": 201,
+        "to": 300,
+        "rate": 7.20
+      },
+      {
+        "from": 301,
+        "to": 400,
+        "rate": 8.50
+      },
+      {
+        "from": 401,
+        "to": 800,
+        "rate": 9.00
+      },
+      {
+        "from": 801,
+        "rate": 9.50
+      }
+    ]
+  },
+  {
+    "id": "RAJ-01",
+    "state": "Rajasthan",
+    "provider": "JVVNL",
+    "fixed_charge_inr": 230.0,
+    "fuel_surcharge_pct": 0.03,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 4.75
+      },
+      {
+        "from": 51,
+        "to": 150,
+        "rate": 6.50
+      },
+      {
+        "from": 151,
+        "to": 300,
+        "rate": 7.35
+      },
+      {
+        "from": 301,
+        "to": 500,
+        "rate": 7.65
+      },
+      {
+        "from": 501,
+        "rate": 7.95
+      }
+    ]
+  },
+  {
+    "id": "MP-01",
+    "state": "Madhya Pradesh",
+    "provider": "MPWZ",
+    "fixed_charge_inr": 65.0,
+    "fuel_surcharge_pct": 0.05,
+    "electricity_duty_pct": 0.09,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 4.13
+      },
+      {
+        "from": 51,
+        "to": 150,
+        "rate": 5.05
+      },
+      {
+        "from": 151,
+        "to": 300,
+        "rate": 6.45
+      },
+      {
+        "from": 301,
+        "rate": 6.65
+      }
+    ]
+  },
+  {
+    "id": "PUN-01",
+    "state": "Punjab",
+    "provider": "PSPCL",
+    "fixed_charge_inr": 50.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.15,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 4.49
+      },
+      {
+        "from": 101,
+        "to": 300,
+        "rate": 6.50
+      },
+      {
+        "from": 301,
+        "rate": 7.30
+      }
+    ]
+  },
+  {
+    "id": "HAR-01",
+    "state": "Haryana",
+    "provider": "UHBVN",
+    "fixed_charge_inr": 40.0,
+    "fuel_surcharge_pct": 0.02,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 150,
+        "rate": 2.75
+      },
+      {
+        "from": 151,
+        "to": 250,
+        "rate": 5.25
+      },
+      {
+        "from": 251,
+        "to": 500,
+        "rate": 6.30
+      },
+      {
+        "from": 501,
+        "to": 800,
+        "rate": 7.10
+      },
+      {
+        "from": 801,
+        "rate": 7.10
+      }
+    ]
+  },
+  {
+    "id": "BIH-01",
+    "state": "Bihar",
+    "provider": "NBPDCL",
+    "fixed_charge_inr": 40.0,
+    "fuel_surcharge_pct": 0.04,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 4.27
+      },
+      {
+        "from": 51,
+        "to": 100,
+        "rate": 4.54
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 5.61
+      },
+      {
+        "from": 201,
+        "rate": 6.78
+      }
+    ]
+  },
+  {
+    "id": "CG-01",
+    "state": "Chhattisgarh",
+    "provider": "CSPDCL",
+    "fixed_charge_inr": 25.0,
+    "fuel_surcharge_pct": 0.02,
+    "electricity_duty_pct": 0.08,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 3.70
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 3.90
+      },
+      {
+        "from": 201,
+        "to": 400,
+        "rate": 5.30
+      },
+      {
+        "from": 401,
+        "rate": 5.80
+      }
+    ]
+  },
+  {
+    "id": "JH-01",
+    "state": "Jharkhand",
+    "provider": "JBVNL",
+    "fixed_charge_inr": 75.0,
+    "fuel_surcharge_pct": 0.06,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 200,
+        "rate": 6.30
+      },
+      {
+        "from": 201,
+        "rate": 6.60
+      }
+    ]
+  },
+  {
+    "id": "OD-01",
+    "state": "Odisha",
+    "provider": "TPNODL",
+    "fixed_charge_inr": 20.0,
+    "fuel_surcharge_pct": 0.02,
+    "electricity_duty_pct": 0.04,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 3.00
+      },
+      {
+        "from": 51,
+        "to": 200,
+        "rate": 4.80
+      },
+      {
+        "from": 201,
+        "to": 400,
+        "rate": 5.80
+      },
+      {
+        "from": 401,
+        "rate": 6.20
+      }
+    ]
+  },
+  {
+    "id": "HP-01",
+    "state": "Himachal Pradesh",
+    "provider": "HPSEB",
+    "fixed_charge_inr": 50.0,
+    "fuel_surcharge_pct": 0.01,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 150,
+        "rate": 3.30
+      },
+      {
+        "from": 151,
+        "to": 300,
+        "rate": 4.30
+      },
+      {
+        "from": 301,
+        "rate": 5.00
+      }
+    ]
+  },
+  {
+    "id": "UK-01",
+    "state": "Uttarakhand",
+    "provider": "UPCL",
+    "fixed_charge_inr": 65.0,
+    "fuel_surcharge_pct": 0.03,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 2.95
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 4.20
+      },
+      {
+        "from": 201,
+        "to": 400,
+        "rate": 5.80
+      },
+      {
+        "from": 401,
+        "rate": 6.55
+      }
+    ]
+  },
+  {
+    "id": "ASS-01",
+    "state": "Assam",
+    "provider": "APDCL",
+    "fixed_charge_inr": 40.0,
+    "fuel_surcharge_pct": 0.05,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 120,
+        "rate": 5.25
+      },
+      {
+        "from": 121,
+        "to": 240,
+        "rate": 6.50
+      },
+      {
+        "from": 241,
+        "rate": 7.50
+      }
+    ]
+  },
+  {
+    "id": "JK-01",
+    "state": "Jammu & Kashmir",
+    "provider": "JKPDD",
+    "fixed_charge_inr": 20.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.22,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 200,
+        "rate": 2.00
+      },
+      {
+        "from": 201,
+        "to": 400,
+        "rate": 3.20
+      },
+      {
+        "from": 401,
+        "rate": 3.80
+      }
+    ]
+  },
+  {
+    "id": "GOA-01",
+    "state": "Goa",
+    "provider": "EDG",
+    "fixed_charge_inr": 15.0,
+    "fuel_surcharge_pct": 0.01,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 1.75
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 2.60
+      },
+      {
+        "from": 201,
+        "to": 300,
+        "rate": 3.30
+      },
+      {
+        "from": 301,
+        "to": 400,
+        "rate": 4.40
+      },
+      {
+        "from": 401,
+        "to": 800,
+        "rate": 5.10
+      },
+      {
+        "from": 801,
+        "rate": 9.25
+      }
+    ]
+  },
+  {
+    "id": "TRI-01",
+    "state": "Tripura",
+    "provider": "TSECL",
+    "fixed_charge_inr": 50.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 4.60
+      },
+      {
+        "from": 51,
+        "to": 150,
+        "rate": 5.80
+      },
+      {
+        "from": 151,
+        "to": 300,
+        "rate": 6.40
+      },
+      {
+        "from": 301,
+        "rate": 7.40
+      }
+    ]
+  },
+  {
+    "id": "MEG-01",
+    "state": "Meghalaya",
+    "provider": "MePDCL",
+    "fixed_charge_inr": 60.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 4.60
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 4.80
+      },
+      {
+        "from": 201,
+        "rate": 5.40
+      }
+    ]
+  },
+  {
+    "id": "MAN-01",
+    "state": "Manipur",
+    "provider": "MSPDCL",
+    "fixed_charge_inr": 70.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 4.75
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 5.35
+      },
+      {
+        "from": 201,
+        "rate": 6.30
+      }
+    ]
+  },
+  {
+    "id": "NAG-01",
+    "state": "Nagaland",
+    "provider": "DoPN",
+    "fixed_charge_inr": 40.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 4.65
+      },
+      {
+        "from": 101,
+        "to": 250,
+        "rate": 5.65
+      },
+      {
+        "from": 251,
+        "rate": 6.65
+      }
+    ]
+  },
+  {
+    "id": "ARU-01",
+    "state": "Arunachal Pradesh",
+    "provider": "DoP",
+    "fixed_charge_inr": 50.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 4.00
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 4.70
+      },
+      {
+        "from": 201,
+        "rate": 5.50
+      }
+    ]
+  },
+  {
+    "id": "MIZ-01",
+    "state": "Mizoram",
+    "provider": "P&E Mizoram",
+    "fixed_charge_inr": 60.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 100,
+        "rate": 4.60
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 5.60
+      },
+      {
+        "from": 201,
+        "rate": 6.10
+      }
+    ]
+  },
+  {
+    "id": "SIK-01",
+    "state": "Sikkim",
+    "provider": "Energy & Power Dept",
+    "fixed_charge_inr": 20.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.00,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 50,
+        "rate": 1.50
+      },
+      {
+        "from": 51,
+        "to": 100,
+        "rate": 2.50
+      },
+      {
+        "from": 101,
+        "to": 200,
+        "rate": 3.00
+      },
+      {
+        "from": 201,
+        "rate": 4.00
+      }
+    ]
+  },
+  {
+    "id": "CHD-01",
+    "state": "Chandigarh",
+    "provider": "CED",
+    "fixed_charge_inr": 15.0,
+    "fuel_surcharge_pct": 0.00,
+    "electricity_duty_pct": 0.05,
+    "slab_config": [
+      {
+        "from": 0,
+        "to": 150,
+        "rate": 2.75
+      },
+      {
+        "from": 151,
+        "to": 400,
+        "rate": 4.25
+      },
+      {
+        "from": 401,
+        "rate": 4.65
+      }
+    ]
+  }
+]

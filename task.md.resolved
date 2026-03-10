@@ -1,0 +1,43 @@
+# VoltIQ - Project Checklist
+
+## Sprint 1: User & Home Management
+- [x] Refine architecture and file structure
+- [x] Setup Supabase Project & Auth
+- [x] DB Schema: `users` (profiles) & `homes` tables
+- [x] Backend: FastAPI Setup + Auth Dependencies (JWT) + Home Endpoints
+- [x] Frontend: Next.js Setup + ShadCN + Supabase Auth UI + Home Profile Setup (multi-home support)
+
+## Sprint 2: Appliance Modeling Engine
+- [x] DB Schema: [appliances](file:///c:/Users/user/Desktop/VoltIQ/backend/services/billing_engine.py#85-102) table
+- [x] Backend: Appliance CRUD + Energy simulation logic (seasonal, degradation, efficiency)
+- [x] Frontend: Appliance management UI
+
+## Sprint 3: Tariff & Billing Engine
+- [x] Models: Flat rate, Slab-based, Time-of-Use
+- [x] Backend: Billing Calculator endpoint
+- [x] Frontend: Itemized bill breakdown UI
+
+## Sprint 4: Analytics Dashboard
+- [x] Backend: KPI Aggregation endpoints
+- [x] Frontend: KPI cards, Appliance breakdown chart, Slab distribution chart, MoM trend
+
+## Sprint 5: AI Insights Engine
+- [ ] Backend: Anomaly detection, ARIMA bill forecast, 3-tier savings plan
+- [ ] AI Integration: GPT-4o function calling with `confidence_score`
+- [ ] Frontend: Insights display UI
+
+## Sprint 6: Chat Assistant (VoltIQ)
+- [ ] Backend: Intent classification, Multi-agent delegation, WebSocket streaming
+- [ ] Frontend: Real-time Chat UI
+
+## Sprint 7: Alert System
+- [ ] Backend: Hourly anomaly detection / Threshold alerts
+- [ ] Frontend: In-app notifications & Alert settings
+
+## Sprint 8: Digital Twin Simulation
+- [ ] Backend: What-if scenarios (solar overlay, appliance swapping, ROI)
+- [ ] Frontend: Digital Twin interactive UI
+
+## Sprint 9: Report Generation
+- [ ] Backend: PDF-ready JSON output + CO2 calculation
+- [ ] Frontend: Executive summary report download

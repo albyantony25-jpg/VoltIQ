@@ -1,0 +1,452 @@
+[
+  {
+    "name": "1.5T Split AC 5-star",
+    "category": "hvac",
+    "rated_watts": 1500,
+    "standby_watts": 5,
+    "efficiency_class": "A+++",
+    "usage_hours": 8,
+    "id": "tpl-hvac-1"
+  },
+  {
+    "name": "2T Split AC 3-star",
+    "category": "hvac",
+    "rated_watts": 2200,
+    "standby_watts": 5,
+    "efficiency_class": "B",
+    "usage_hours": 8,
+    "id": "tpl-hvac-2"
+  },
+  {
+    "name": "1T Window AC 3-star",
+    "category": "hvac",
+    "rated_watts": 1200,
+    "standby_watts": 5,
+    "efficiency_class": "C",
+    "usage_hours": 8,
+    "id": "tpl-hvac-3"
+  },
+  {
+    "name": "Ceiling Fan",
+    "category": "hvac",
+    "rated_watts": 75,
+    "standby_watts": 0,
+    "efficiency_class": "A",
+    "usage_hours": 12,
+    "id": "tpl-hvac-4"
+  },
+  {
+    "name": "High-Speed Ceiling Fan",
+    "category": "hvac",
+    "rated_watts": 50,
+    "standby_watts": 0,
+    "efficiency_class": "A++",
+    "usage_hours": 12,
+    "id": "tpl-hvac-5"
+  },
+  {
+    "name": "Tower Fan",
+    "category": "hvac",
+    "rated_watts": 50,
+    "standby_watts": 2,
+    "efficiency_class": "A+",
+    "usage_hours": 8,
+    "id": "tpl-hvac-6"
+  },
+  {
+    "name": "Pedestal Fan",
+    "category": "hvac",
+    "rated_watts": 60,
+    "standby_watts": 1,
+    "efficiency_class": "A",
+    "usage_hours": 8,
+    "id": "tpl-hvac-7"
+  },
+  {
+    "name": "Air Cooler 40L",
+    "category": "hvac",
+    "rated_watts": 150,
+    "standby_watts": 0,
+    "efficiency_class": "B",
+    "usage_hours": 10,
+    "id": "tpl-hvac-8"
+  },
+  {
+    "name": "Room Heater 2000W",
+    "category": "hvac",
+    "rated_watts": 2000,
+    "standby_watts": 0,
+    "efficiency_class": "E",
+    "usage_hours": 4,
+    "id": "tpl-hvac-9"
+  },
+  {
+    "name": "Air Purifier",
+    "category": "hvac",
+    "rated_watts": 40,
+    "standby_watts": 2,
+    "efficiency_class": "A",
+    "usage_hours": 12,
+    "id": "tpl-hvac-10"
+  },
+  {
+    "name": "Double-door Fridge 250L",
+    "category": "kitchen",
+    "rated_watts": 250,
+    "standby_watts": 50,
+    "efficiency_class": "A+",
+    "usage_hours": 24,
+    "id": "tpl-kitchen-11"
+  },
+  {
+    "name": "Single-door Fridge 190L",
+    "category": "kitchen",
+    "rated_watts": 180,
+    "standby_watts": 30,
+    "efficiency_class": "A++",
+    "usage_hours": 24,
+    "id": "tpl-kitchen-12"
+  },
+  {
+    "name": "Microwave 800W",
+    "category": "kitchen",
+    "rated_watts": 1200,
+    "standby_watts": 3,
+    "efficiency_class": "B",
+    "usage_hours": 0.5,
+    "id": "tpl-kitchen-13"
+  },
+  {
+    "name": "Convection Microwave",
+    "category": "kitchen",
+    "rated_watts": 1500,
+    "standby_watts": 4,
+    "efficiency_class": "C",
+    "usage_hours": 0.8,
+    "id": "tpl-kitchen-14"
+  },
+  {
+    "name": "Mixer Grinder 750W",
+    "category": "kitchen",
+    "rated_watts": 750,
+    "standby_watts": 0,
+    "efficiency_class": "C",
+    "usage_hours": 0.3,
+    "id": "tpl-kitchen-15"
+  },
+  {
+    "name": "Induction Cooktop 2000W",
+    "category": "kitchen",
+    "rated_watts": 2000,
+    "standby_watts": 2,
+    "efficiency_class": "A",
+    "usage_hours": 1,
+    "id": "tpl-kitchen-16"
+  },
+  {
+    "name": "Electric Kettle 1.5L",
+    "category": "kitchen",
+    "rated_watts": 1500,
+    "standby_watts": 0,
+    "efficiency_class": "B",
+    "usage_hours": 0.2,
+    "id": "tpl-kitchen-17"
+  },
+  {
+    "name": "Dishwasher 12 Place",
+    "category": "kitchen",
+    "rated_watts": 1800,
+    "standby_watts": 2,
+    "efficiency_class": "A+",
+    "usage_hours": 1.5,
+    "id": "tpl-kitchen-18"
+  },
+  {
+    "name": "Toaster 2 Slice",
+    "category": "kitchen",
+    "rated_watts": 800,
+    "standby_watts": 0,
+    "efficiency_class": "C",
+    "usage_hours": 0.1,
+    "id": "tpl-kitchen-19"
+  },
+  {
+    "name": "Air Fryer 4L",
+    "category": "kitchen",
+    "rated_watts": 1400,
+    "standby_watts": 1,
+    "efficiency_class": "A",
+    "usage_hours": 0.5,
+    "id": "tpl-kitchen-20"
+  },
+  {
+    "name": "43\" LED TV",
+    "category": "entertainment",
+    "rated_watts": 100,
+    "standby_watts": 2,
+    "efficiency_class": "A+",
+    "usage_hours": 4,
+    "id": "tpl-entertainment-21"
+  },
+  {
+    "name": "55\" 4K Smart TV",
+    "category": "entertainment",
+    "rated_watts": 150,
+    "standby_watts": 3,
+    "efficiency_class": "A",
+    "usage_hours": 4,
+    "id": "tpl-entertainment-22"
+  },
+  {
+    "name": "32\" HD TV",
+    "category": "entertainment",
+    "rated_watts": 60,
+    "standby_watts": 1,
+    "efficiency_class": "A",
+    "usage_hours": 4,
+    "id": "tpl-entertainment-23"
+  },
+  {
+    "name": "Gaming Console (PS5/Xbox)",
+    "category": "entertainment",
+    "rated_watts": 200,
+    "standby_watts": 10,
+    "efficiency_class": "C",
+    "usage_hours": 2,
+    "id": "tpl-entertainment-24"
+  },
+  {
+    "name": "Laptop Standard",
+    "category": "entertainment",
+    "rated_watts": 65,
+    "standby_watts": 1,
+    "efficiency_class": "A++",
+    "usage_hours": 6,
+    "id": "tpl-entertainment-25"
+  },
+  {
+    "name": "Gaming Laptop",
+    "category": "entertainment",
+    "rated_watts": 240,
+    "standby_watts": 2,
+    "efficiency_class": "C",
+    "usage_hours": 4,
+    "id": "tpl-entertainment-26"
+  },
+  {
+    "name": "Desktop PC",
+    "category": "entertainment",
+    "rated_watts": 300,
+    "standby_watts": 5,
+    "efficiency_class": "B",
+    "usage_hours": 4,
+    "id": "tpl-entertainment-27"
+  },
+  {
+    "name": "WiFi Router AC",
+    "category": "entertainment",
+    "rated_watts": 15,
+    "standby_watts": 15,
+    "efficiency_class": "A",
+    "usage_hours": 24,
+    "id": "tpl-entertainment-28"
+  },
+  {
+    "name": "Soundbar 100W",
+    "category": "entertainment",
+    "rated_watts": 50,
+    "standby_watts": 2,
+    "efficiency_class": "B",
+    "usage_hours": 2,
+    "id": "tpl-entertainment-29"
+  },
+  {
+    "name": "LED Bulb 9W",
+    "category": "lighting",
+    "rated_watts": 9,
+    "standby_watts": 0,
+    "efficiency_class": "A+++",
+    "usage_hours": 6,
+    "id": "tpl-lighting-30"
+  },
+  {
+    "name": "LED Bulb 12W",
+    "category": "lighting",
+    "rated_watts": 12,
+    "standby_watts": 0,
+    "efficiency_class": "A++",
+    "usage_hours": 6,
+    "id": "tpl-lighting-31"
+  },
+  {
+    "name": "Tube Light 36W",
+    "category": "lighting",
+    "rated_watts": 36,
+    "standby_watts": 0,
+    "efficiency_class": "A",
+    "usage_hours": 6,
+    "id": "tpl-lighting-32"
+  },
+  {
+    "name": "LED Tube 20W",
+    "category": "lighting",
+    "rated_watts": 20,
+    "standby_watts": 0,
+    "efficiency_class": "A++",
+    "usage_hours": 6,
+    "id": "tpl-lighting-33"
+  },
+  {
+    "name": "CFL 23W",
+    "category": "lighting",
+    "rated_watts": 23,
+    "standby_watts": 0,
+    "efficiency_class": "B",
+    "usage_hours": 4,
+    "id": "tpl-lighting-34"
+  },
+  {
+    "name": "LED Strip 5m",
+    "category": "lighting",
+    "rated_watts": 24,
+    "standby_watts": 0,
+    "efficiency_class": "A+",
+    "usage_hours": 4,
+    "id": "tpl-lighting-35"
+  },
+  {
+    "name": "Smart Bulb Color 10W",
+    "category": "lighting",
+    "rated_watts": 10,
+    "standby_watts": 1,
+    "efficiency_class": "A+",
+    "usage_hours": 5,
+    "id": "tpl-lighting-36"
+  },
+  {
+    "name": "Incandescent 60W",
+    "category": "lighting",
+    "rated_watts": 60,
+    "standby_watts": 0,
+    "efficiency_class": "G",
+    "usage_hours": 2,
+    "id": "tpl-lighting-37"
+  },
+  {
+    "name": "Washing Machine 6kg (Top)",
+    "category": "laundry",
+    "rated_watts": 400,
+    "standby_watts": 2,
+    "efficiency_class": "A+",
+    "usage_hours": 1,
+    "id": "tpl-laundry-38"
+  },
+  {
+    "name": "Washing Machine 8kg (Front)",
+    "category": "laundry",
+    "rated_watts": 2000,
+    "standby_watts": 2,
+    "efficiency_class": "A++",
+    "usage_hours": 1,
+    "id": "tpl-laundry-39"
+  },
+  {
+    "name": "Tumble Dryer",
+    "category": "laundry",
+    "rated_watts": 2500,
+    "standby_watts": 2,
+    "efficiency_class": "D",
+    "usage_hours": 1,
+    "id": "tpl-laundry-40"
+  },
+  {
+    "name": "Heat Pump Dryer",
+    "category": "laundry",
+    "rated_watts": 900,
+    "standby_watts": 2,
+    "efficiency_class": "A++",
+    "usage_hours": 2,
+    "id": "tpl-laundry-41"
+  },
+  {
+    "name": "Iron Box Dry",
+    "category": "laundry",
+    "rated_watts": 1000,
+    "standby_watts": 0,
+    "efficiency_class": "B",
+    "usage_hours": 0.5,
+    "id": "tpl-laundry-42"
+  },
+  {
+    "name": "Steam Iron",
+    "category": "laundry",
+    "rated_watts": 1600,
+    "standby_watts": 0,
+    "efficiency_class": "C",
+    "usage_hours": 0.5,
+    "id": "tpl-laundry-43"
+  },
+  {
+    "name": "Vacuum Cleaner",
+    "category": "other",
+    "rated_watts": 1400,
+    "standby_watts": 0,
+    "efficiency_class": "B",
+    "usage_hours": 0.3,
+    "id": "tpl-other-44"
+  },
+  {
+    "name": "Water Heater 25L",
+    "category": "other",
+    "rated_watts": 2000,
+    "standby_watts": 10,
+    "efficiency_class": "B",
+    "usage_hours": 1,
+    "id": "tpl-other-45"
+  },
+  {
+    "name": "Electric Scooter Charger (Slow)",
+    "category": "ev",
+    "rated_watts": 350,
+    "standby_watts": 0,
+    "efficiency_class": "A",
+    "usage_hours": 4,
+    "id": "tpl-ev-46"
+  },
+  {
+    "name": "Electric Bike Charger (Fast)",
+    "category": "ev",
+    "rated_watts": 800,
+    "standby_watts": 1,
+    "efficiency_class": "A",
+    "usage_hours": 3,
+    "id": "tpl-ev-47"
+  },
+  {
+    "name": "EV Car Charger 3.3kW",
+    "category": "ev",
+    "rated_watts": 3300,
+    "standby_watts": 3,
+    "efficiency_class": "A",
+    "usage_hours": 8,
+    "id": "tpl-ev-48"
+  },
+  {
+    "name": "EV Car Charger 7.4kW",
+    "category": "ev",
+    "rated_watts": 7400,
+    "standby_watts": 5,
+    "efficiency_class": "A",
+    "usage_hours": 6,
+    "id": "tpl-ev-49"
+  },
+  {
+    "name": "EV Car Charger 11kW",
+    "category": "ev",
+    "rated_watts": 11000,
+    "standby_watts": 8,
+    "efficiency_class": "A+",
+    "usage_hours": 5,
+    "id": "tpl-ev-50"
+  }
+]
