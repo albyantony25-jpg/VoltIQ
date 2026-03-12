@@ -89,7 +89,7 @@ async def seed_database():
                 standby_watts FLOAT DEFAULT 0,
                 efficiency_class TEXT DEFAULT 'A',
                 load_factor FLOAT DEFAULT 0.85,
-                usage_hours_per_day FLOAT DEFAULT 4,
+                usage_hours FLOAT DEFAULT 4,
                 age_years INT DEFAULT 0,
                 is_active BOOLEAN DEFAULT TRUE,
                 created_at TIMESTAMPTZ DEFAULT NOW()
@@ -156,7 +156,26 @@ async def migrate_database():
         await conn.execute("""
             UPDATE alerts SET triggered_at = created_at WHERE triggered_at IS NULL;
         """)
-        return {"status": "migration complete — alerts table updated"}
+        
+        # Patch appliances table: add usage_hours and backfill from usage_hours_per_day
+        await conn.execute("""
+            ALTER TABLE appliances
+                ADD COLUMN IF NOT EXISTS usage_hours FLOAT DEFAULT 4;
+        """)
+        
+        # Check if usage_hours_per_day exists and backfill if needed
+        # We use a subquery/check to safely copy values
+        await conn.execute("""
+            DO $$ 
+            BEGIN 
+                IF EXISTS (SELECT 1 FROM information_schema.columns 
+                           WHERE table_name='appliances' AND column_name='usage_hours_per_day') THEN
+                    UPDATE appliances SET usage_hours = usage_hours_per_day WHERE usage_hours = 4;
+                END IF;
+            END $$;
+        """)
+        
+        return {"status": "migration complete — alerts and appliances tables updated"}
 
 # CORS must be last middleware added (runs first due to LIFO order)
 app.state.limiter = limiter
