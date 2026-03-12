@@ -122,6 +122,24 @@ async def seed_database():
         """)
         return {"status": "tables created"}
 
+@app.post("/seed-tariffs")
+async def seed_tariffs():
+    import json, os
+    tariff_path = os.path.join(os.path.dirname(__file__), 'data/tariffs_seed.json')
+    with open(tariff_path, 'r') as f:
+        tariffs = json.load(f)
+    async with db.pool.acquire() as conn:
+        for t in tariffs:
+            await conn.execute("""
+                INSERT INTO tariffs (id, state, provider, fixed_charge_inr,
+                    fuel_surcharge_pct, electricity_duty_pct, slab_config)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                ON CONFLICT (id) DO NOTHING
+            """, t['id'], t['state'], t['provider'],
+                t['fixed_charge_inr'], t['fuel_surcharge_pct'],
+                t['electricity_duty_pct'], json.dumps(t['slab_config']))
+    return {"status": f"seeded {len(tariffs)} tariffs"}
+
 # CORS must be last middleware added (runs first due to LIFO order)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
