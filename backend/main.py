@@ -56,8 +56,8 @@ async def add_request_id_and_log(request: Request, call_next):
 # CORS added LAST so it executes FIRST (FastAPI middleware is LIFO)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
