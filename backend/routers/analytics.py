@@ -14,7 +14,7 @@ import asyncpg
 
 from core.dependencies import get_db_pool, get_current_user
 
-router = APIRouter(prefix="/analytics", tags=["Analytics"])
+router = APIRouter(prefix="/analytics", tags=["Analytics"], redirect_slashes=False)
 
 
 def _generate_heatmap_data(rows: list[dict]) -> list[dict]:

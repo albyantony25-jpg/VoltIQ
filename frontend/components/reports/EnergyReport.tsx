@@ -116,13 +116,13 @@ export const EnergyReport = ({ data }: { data: any }) => {
 
                 <View style={styles.highlightBox}>
                     <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#1A73E8', marginBottom: 5 }}>AI Key Finding</Text>
-                    <Text style={styles.text}>{ai_insights.forecast}</Text>
+                    <Text style={styles.text}>{ai_insights.forecast?.reasoning || 'Forecast generated from recent data patterns.'}</Text>
                 </View>
 
                 <Text style={styles.sectionTitle}>Anomalies Detected</Text>
                 <View style={styles.bulletList}>
-                    {ai_insights.anomalies.map((a: string, i: number) => (
-                        <Text key={i} style={styles.bulletItem}>• {a}</Text>
+                    {ai_insights.anomalies.map((a: any, i: number) => (
+                        <Text key={i} style={styles.bulletItem}>• {a.explanation || `Anomaly detected in ${a.month}`}</Text>
                     ))}
                 </View>
                 <Footer />
@@ -327,7 +327,7 @@ export const EnergyReport = ({ data }: { data: any }) => {
                 </View>
 
                 <Text style={{ fontSize: 12, color: '#666', marginTop: 20 }}>
-                    Component Efficiency: {ai_insights.efficiency_score_breakdown}
+                    Component Efficiency Grade: {ai_insights.efficiency_grade || 'B'}
                 </Text>
 
                 <Footer />

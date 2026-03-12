@@ -15,7 +15,7 @@ from core.config import settings
 from core.database import db
 from core.exceptions import EnergyPlatformError, ValidationError, AIServiceError, BillingError
 
-from routers import homes, appliances, simulation, billing, insights, chat, reports, alerts, analytics, demo
+from routers import homes, appliances, simulation, billing, insights, chat, reports, alerts, analytics, demo, tariffs
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,9 +37,11 @@ app = FastAPI(
     title="VoltIQ API",
     description="Backend services for AI Home Energy Intelligence Platform",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    redirect_slashes=False
 )
 
+# CORS must be last middleware added (runs first due to LIFO order)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -50,6 +52,19 @@ async def add_request_id_and_log(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Request-ID"] = request_id
     return response
+
+# CORS added LAST so it executes FIRST (FastAPI middleware is LIFO)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.exception_handler(EnergyPlatformError)
 async def custom_exception_handler(request: Request, exc: EnergyPlatformError):
@@ -79,14 +94,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS has been moved to the top of the middleware stack
 
 # Root/Health
 @app.get("/health")
@@ -105,6 +113,7 @@ app.include_router(reports.router, prefix=api_prefix)
 app.include_router(alerts.router, prefix=api_prefix)
 app.include_router(analytics.router, prefix=api_prefix)
 app.include_router(demo.router, prefix=api_prefix)
+app.include_router(tariffs.router, prefix=api_prefix)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

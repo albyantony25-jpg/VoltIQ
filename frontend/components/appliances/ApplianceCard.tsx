@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Tv, Refrigerator, Wind, Zap, Car, Lightbulb,
     Settings, Trash2, Edit2, Info, Droplet, Fan
@@ -40,8 +40,16 @@ export function ApplianceCard({ appliance, onEdit, onDelete }: ApplianceCardProp
     const style = CATEGORY_STYLES[appliance.category] || CATEGORY_STYLES.other;
     const Icon = style.icon;
 
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({
+        rated_watts: appliance.rated_watts || 0,
+        usage_hours: appliance.usage_hours || 0
+    });
+
     // Calculate basic monthly consumption if not provided by simulation yet
-    const monthlyKwh = ((appliance.rated_watts * appliance.usage_hours * 30) / 1000).toFixed(1);
+    const displayWatts = isEditing ? editData.rated_watts : appliance.rated_watts;
+    const displayHours = isEditing ? editData.usage_hours : appliance.usage_hours;
+    const monthlyKwh = ((displayWatts * displayHours * 30) / 1000).toFixed(1);
     const costPerKwh = 8.0; // Mock rate in INR
     const monthlyCost = (parseFloat(monthlyKwh) * costPerKwh).toFixed(0);
 
@@ -60,15 +68,34 @@ export function ApplianceCard({ appliance, onEdit, onDelete }: ApplianceCardProp
                     </div>
                 </div>
                 <div className="flex gap-1">
-                    {onEdit && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-accent" onClick={() => onEdit(appliance)}>
-                            <Edit2 className="h-4 w-4" />
-                        </Button>
-                    )}
-                    {onDelete && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-red-500" onClick={() => onDelete(appliance.id)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                    {isEditing ? (
+                        <>
+                            <Button variant="ghost" size="sm" className="h-8 text-emerald-500 hover:text-emerald-400 px-2" onClick={() => {
+                                if(onEdit) onEdit({ ...appliance, rated_watts: editData.rated_watts, usage_hours: editData.usage_hours });
+                                setIsEditing(false);
+                            }}>
+                                Save
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 text-slate-500 hover:text-slate-400 px-2" onClick={() => {
+                                setEditData({ rated_watts: appliance.rated_watts, usage_hours: appliance.usage_hours });
+                                setIsEditing(false);
+                            }}>
+                                Cancel
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            {onEdit && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-accent" onClick={() => setIsEditing(true)}>
+                                    <Edit2 className="h-4 w-4" />
+                                </Button>
+                            )}
+                            {onDelete && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-red-500" onClick={() => onDelete(appliance.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </>
                     )}
                 </div>
             </CardHeader>
@@ -77,12 +104,38 @@ export function ApplianceCard({ appliance, onEdit, onDelete }: ApplianceCardProp
                 <div className="mt-2 grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                         <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Power Rating</p>
-                        <p className="text-sm font-semibold">{appliance.rated_watts} W</p>
+                        {isEditing ? (
+                            <div className="flex items-center gap-1">
+                                <input 
+                                    type="number" 
+                                    value={editData.rated_watts} 
+                                    onChange={(e) => setEditData({...editData, rated_watts: Number(e.target.value)})}
+                                    className="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-sm text-white outline-none focus:border-indigo-500"
+                                    min="1"
+                                />
+                                <span className="text-xs font-semibold text-slate-400">W</span>
+                            </div>
+                        ) : (
+                            <p className="text-sm font-semibold">{appliance.rated_watts} W</p>
+                        )}
                     </div>
 
                     <div className="space-y-1">
                         <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Usage</p>
-                        <p className="text-sm font-semibold">{appliance.usage_hours} hrs/day</p>
+                        {isEditing ? (
+                            <div className="flex items-center gap-1">
+                                <input 
+                                    type="number" 
+                                    value={editData.usage_hours}
+                                    onChange={(e) => setEditData({...editData, usage_hours: Number(e.target.value)})}
+                                    className="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-sm text-white outline-none focus:border-indigo-500"
+                                    min="0" max="24"
+                                />
+                                <span className="text-xs font-semibold text-slate-400">h/d</span>
+                            </div>
+                        ) : (
+                            <p className="text-sm font-semibold">{appliance.usage_hours} hrs/day</p>
+                        )}
                     </div>
 
                     <div className="space-y-1 col-span-2 pt-2 border-t border-slate-100 dark:border-slate-800">

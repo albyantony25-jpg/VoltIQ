@@ -4,6 +4,7 @@ import { useState } from "react";
 import { HelpCircle, Play, Database, Github, Mail, X } from "lucide-react";
 import { useTourStore } from "@/lib/tourStore";
 import { motion, AnimatePresence } from "framer-motion";
+import { fetchApi } from "@/lib/api";
 
 export function FloatingHelp() {
     const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +17,7 @@ export function FloatingHelp() {
 
     const handleLoadDemo = async () => {
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/demo/reset`, { method: 'POST' });
+            await fetchApi(`/demo/reset`, { method: 'POST' });
             window.location.reload();
         } catch (e) {
             console.error("Failed to load demo data", e);

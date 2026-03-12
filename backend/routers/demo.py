@@ -4,7 +4,7 @@ import sys
 from fastapi import APIRouter, HTTPException
 import logging
 
-router = APIRouter(prefix="/demo", tags=["demo"])
+router = APIRouter(prefix="/demo", tags=["Demo"], redirect_slashes=False)
 logger = logging.getLogger(__name__)
 
 @router.post("/reset")

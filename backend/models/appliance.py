@@ -26,6 +26,7 @@ class EfficiencyClass(str, Enum):
     G = "G"
 
 class ApplianceBase(BaseModel):
+    id: Optional[uuid.UUID] = None
     name: str = Field(..., min_length=2, max_length=100)
     brand: Optional[str] = None
     category: ApplianceCategory
@@ -48,6 +49,7 @@ class ApplianceUpdate(BaseModel):
     efficiency_class: Optional[EfficiencyClass] = None
     age_years: Optional[int] = Field(None, ge=0, le=100)
     is_active: Optional[bool] = None
+    usage_hours: Optional[float] = Field(None, ge=0, le=24)
 
 class ApplianceResponse(ApplianceBase):
     id: uuid.UUID

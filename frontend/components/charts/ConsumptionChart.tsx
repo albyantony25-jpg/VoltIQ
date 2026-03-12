@@ -24,7 +24,7 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
     }, [data, range])
 
     return (
-        <Card className="border-slate-800 bg-card h-full flex flex-col">
+        <Card className="border-slate-800 bg-card h-full flex flex-col overflow-hidden">
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <div>
@@ -42,13 +42,14 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
                     </Select>
                 </div>
             </CardHeader>
-            <CardContent className="flex-1 min-h-[300px] pt-4">
+            <CardContent className="flex-1 min-h-[300px] relative p-0 overflow-hidden">
                 {chartData.length === 0 ? (
-                    <div className="h-full w-full flex items-center justify-center text-slate-500">
+                    <div className="absolute inset-0 flex items-center justify-center text-slate-500">
                         No consumption data available.
                     </div>
                 ) : (
-                    <ResponsiveContainer width="100%" height="100%">
+                    <div className="absolute inset-0 pt-4 pb-2 px-2 lg:px-4">
+                        <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={chartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.4} />
                             <XAxis
@@ -115,6 +116,7 @@ export function ConsumptionChart({ data }: ConsumptionChartProps) {
                             />
                         </ComposedChart>
                     </ResponsiveContainer>
+                    </div>
                 )}
             </CardContent>
         </Card>

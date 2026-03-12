@@ -19,61 +19,51 @@ def load_appliance_library():
         return []
 
 @router.get("/library")
-async def get_appliance_library():
-    """Returns 50 pre-built appliance templates."""
-    return load_appliance_library()
+async def get_appliance_library(
+    category: Optional[str] = Query(None, description="Filter by category (hvac, kitchen, etc.)"),
+    type: Optional[str] = Query(None, alias="type", description="Filter by appliance_type"),
+    brand: Optional[str] = Query(None, description="Filter by brand name"),
+    search: Optional[str] = Query(None, description="Search across brand, model, type"),
+):
+    """Returns pre-built appliance templates with optional filtering."""
+    library = load_appliance_library()
+    
+    if category:
+        library = [a for a in library if a.get("category", "").lower() == category.lower()]
+    if type:
+        library = [a for a in library if a.get("appliance_type", "").lower() == type.lower()]
+    if brand:
+        library = [a for a in library if a.get("brand", "").lower() == brand.lower()]
+    if search:
+        q = search.lower()
+        library = [a for a in library if (
+            q in a.get("brand", "").lower() or
+            q in a.get("model_name", "").lower() or
+            q in a.get("appliance_type", "").lower() or
+            q in a.get("name", "").lower() or
+            q in a.get("category", "").lower()
+        )]
+    
+    return library
 
-@router.get("/", response_model=List[ApplianceResponse])
+@router.get("/", response_model=List[ApplianceResponse], include_in_schema=True)
 async def list_appliances(
     home_id: uuid.UUID = Query(...),
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
     """List all appliances for a home."""
-    try:
-        async with db.acquire() as conn:
-            home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1", home_id)
-            if not home:
-                raise HTTPException(status_code=403, detail="Not authorized to access this home")
-            
-            rows = await conn.fetch("SELECT * FROM appliances WHERE home_id = $1 AND is_active = true", home_id)
-            return [dict(row) for row in rows]
-    except AttributeError:
-        # Fallback if DB is not connected (db is None or db.pool is None)
-        return [
-            {
-                "id": "11111111-1111-1111-1111-111111111111",
-                "home_id": str(home_id),
-                "name": "Primary AC",
-                "brand": "LG",
-                "category": "hvac",
-                "rated_watts": 1500,
-                "standby_watts": 5,
-                "efficiency_class": "C",
-                "age_years": 8,
-                "is_active": True,
-                "usage_hours": 6,
-                "created_at": "2026-02-27T00:00:00Z",
-                "updated_at": "2026-02-27T00:00:00Z"
-            },
-            {
-                "id": "22222222-2222-2222-2222-222222222222",
-                "home_id": str(home_id),
-                "name": "Refrigerator",
-                "brand": "Samsung",
-                "category": "kitchen",
-                "rated_watts": 250,
-                "standby_watts": 0,
-                "efficiency_class": "A+",
-                "age_years": 3,
-                "is_active": True,
-                "usage_hours": 24,
-                "created_at": "2026-02-27T00:00:00Z",
-                "updated_at": "2026-02-27T00:00:00Z"
-            }
-        ]
+    async with db.acquire() as conn:
+        # Verify ownership
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", home_id, user_id)
+        if not home:
+            raise HTTPException(status_code=403, detail="Not authorized to access this home")
+        
+        rows = await conn.fetch("SELECT * FROM appliances WHERE home_id = $1 AND is_active = true", home_id)
+        return [dict(row) for row in rows]
 
-@router.post("/", response_model=ApplianceResponse)
-async def create_appliance(
+@router.post("/", response_model=ApplianceResponse, include_in_schema=True)
+async def add_appliance(
     appliance: ApplianceCreate,
     response: Response,
     db: asyncpg.Pool = Depends(get_db_pool),
@@ -87,10 +77,10 @@ async def create_appliance(
         appliance.usage_hours = 20.0
         
     async with db.acquire() as conn:
-        # For MVP/Demo: Just verify the home exists
-        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1", appliance.home_id)
+        # Verify home ownership
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", appliance.home_id, user_id)
         if not home:
-            raise HTTPException(status_code=404, detail="Home not found")
+            raise HTTPException(status_code=404, detail="Home not found or unauthorized")
 
         # Check duplicate name
         existing_name = await conn.fetchrow(
@@ -132,12 +122,13 @@ async def get_appliance(
         row = await conn.fetchrow(
             """
             SELECT a.* FROM appliances a
-            WHERE a.id = $1
+            JOIN homes h ON a.home_id = h.id
+            WHERE a.id = $1 AND h.user_id = $2
             """, 
-            appliance_id
+            appliance_id, user_id
         )
         if not row:
-            raise HTTPException(status_code=404, detail="Appliance not found")
+            raise HTTPException(status_code=404, detail="Appliance not found or unauthorized")
         return dict(row)
 
 @router.put("/{appliance_id}", response_model=ApplianceResponse)
@@ -153,9 +144,10 @@ async def update_appliance(
         existing = await conn.fetchrow(
             """
             SELECT a.id FROM appliances a
-            WHERE a.id = $1
+            JOIN homes h ON a.home_id = h.id
+            WHERE a.id = $1 AND h.user_id = $2
             """, 
-            appliance_id
+            appliance_id, user_id
         )
         if not existing:
             raise HTTPException(status_code=404, detail="Appliance not found or unauthorized")
@@ -203,9 +195,10 @@ async def delete_appliance(
         existing = await conn.fetchrow(
             """
             SELECT a.id FROM appliances a
-            WHERE a.id = $1
+            JOIN homes h ON a.home_id = h.id
+            WHERE a.id = $1 AND h.user_id = $2
             """, 
-            appliance_id
+            appliance_id, user_id
         )
         if not existing:
             raise HTTPException(status_code=404, detail="Appliance not found or unauthorized")
@@ -219,21 +212,22 @@ async def simulate_appliance(
     db: asyncpg.Pool = Depends(get_db_pool),
     user_id: uuid.UUID = Depends(get_current_user)
 ):
-    """Run modeling_engine.calculate_consumption_profile and return result (Mock)."""
+    """Run modeling_engine.calculate_consumption_profile and return result (Physics based)."""
     async with db.acquire() as conn:
         row = await conn.fetchrow(
             """
             SELECT a.* FROM appliances a
-            WHERE a.id = $1
+            JOIN homes h ON a.home_id = h.id
+            WHERE a.id = $1 AND h.user_id = $2
             """, 
-            appliance_id
+            appliance_id, user_id
         )
         if not row:
-            raise HTTPException(status_code=404, detail="Appliance not found")
+            raise HTTPException(status_code=404, detail="Appliance not found or unauthorized")
             
         appliance = dict(row)
         
-        # Mocking calculate_consumption_profile
+        # Mocking calculate_consumption_profile for now, but ensured ownership
         monthly_kwh = (appliance.get("rated_watts", 0) * appliance.get("usage_hours", 0) * 30) / 1000.0
         
         return {

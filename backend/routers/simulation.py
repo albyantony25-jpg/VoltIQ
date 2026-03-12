@@ -30,7 +30,7 @@ class TwinSimulationRequest(BaseModel):
     add_solar_kwp: Optional[float] = None
     target_months: int = 1
 
-router = APIRouter(prefix="/simulation", tags=["Simulation"])
+router = APIRouter(prefix="/simulation", tags=["Simulation"], redirect_slashes=False)
 
 @router.post("/home/{home_id}")
 async def run_home_simulation(
@@ -38,7 +38,12 @@ async def run_home_simulation(
     db: asyncpg.Pool = Depends(get_db_pool),
     user_id: uuid.UUID = Depends(get_current_user)
 ):
-    """Triggers the modeling engine to simulate full household usage."""
+    """Triggers the modeling engine to simulate full household usage, verifying ownership."""
+    async with db.acquire() as conn:
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", home_id, user_id)
+        if not home:
+            raise HTTPException(status_code=404, detail="Home not found or unauthorized")
+            
     engine = ModelingEngine(db)
     await engine.simulate_home_usage(home_id)
     return {"status": "Simulation triggered for home", "home_id": home_id}
@@ -46,20 +51,19 @@ async def run_home_simulation(
 @router.post("/twin")
 async def simulate_digital_twin(
     req: TwinSimulationRequest,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
     """
     Evaluates 'What-If' scenarios by modifying home configurations on-the-fly and running the engine.
     """
-    try:
-        async with db.acquire() as conn:
-            appliances_rows = await conn.fetch("SELECT * FROM appliances WHERE home_id = $1 AND is_active = true", req.home_id)
-    except AttributeError:
-        # Mock rows to match the fallback in appliances.py if DB is unavailable
-        appliances_rows = [
-            {"id": uuid.UUID("11111111-1111-1111-1111-111111111111"), "rated_watts": 1500, "usage_hours": 6, "efficiency_class": "C"},
-            {"id": uuid.UUID("22222222-2222-2222-2222-222222222222"), "rated_watts": 250, "usage_hours": 24, "efficiency_class": "A+"}
-        ]
+    async with db.acquire() as conn:
+        # Verify ownership
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", req.home_id, user_id)
+        if not home:
+            raise HTTPException(status_code=404, detail="Home not found or unauthorized")
+        
+        appliances_rows = await conn.fetch("SELECT * FROM appliances WHERE home_id = $1 AND is_active = true", req.home_id)
         
     baseline_kwh = 0.0
     simulated_kwh = 0.0

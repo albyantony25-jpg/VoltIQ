@@ -10,6 +10,7 @@ class HomeBase(BaseModel):
     city: Optional[str] = None
     home_type: Optional[str] = None
     area_sqft: Optional[float] = Field(None, ge=100)
+    tariff_id: Optional[str] = None
 
 class HomeCreate(HomeBase):
     pass

@@ -8,12 +8,19 @@ export interface User {
 export interface Home {
   id: string;
   userId: string;
+  user_id?: string;
   name: string;
-  region: string;
+  region?: string;
+  city?: string;
   sizeSqFt?: number;
+  area_sqft?: number;
   occupants?: number;
+  bedrooms?: number;
   homeType?: string;
-  createdAt: string;
+  home_type?: string;
+  tariff_id?: string;
+  createdAt?: string;
+  created_at?: string;
 }
 
 export interface Appliance {

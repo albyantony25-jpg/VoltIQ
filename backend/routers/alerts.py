@@ -7,7 +7,7 @@ from pydantic import BaseModel
 import asyncpg
 from core.dependencies import get_db_pool, get_current_user
 
-router = APIRouter(prefix="/alerts", tags=["Alerts"])
+router = APIRouter(prefix="/alerts", tags=["Alerts"], redirect_slashes=False)
 
 # ---------------------------------------------------------------------------
 # Models
@@ -46,25 +46,16 @@ async def create_alert(conn, home_id: uuid.UUID, title: str, message: str, sever
 @router.get("/home/{home_id}", response_model=List[AlertResponse])
 async def get_alerts(
     home_id: uuid.UUID,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
     """Get active alerts for a home."""
-    # Ensure table exists (safeguard since Sprint 1)
     async with db.acquire() as conn:
-        await conn.execute("""
-            CREATE TABLE IF NOT EXISTS alerts (
-                id UUID PRIMARY KEY,
-                home_id UUID,
-                appliance_id UUID NULL,
-                title VARCHAR(255),
-                message TEXT,
-                severity VARCHAR(50),
-                category VARCHAR(50),
-                is_read BOOLEAN DEFAULT FALSE,
-                triggered_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            )
-        """)
-        
+        # Verify home ownership
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", home_id, user_id)
+        if not home:
+            raise HTTPException(status_code=404, detail="Home not found or unauthorized")
+            
         rows = await conn.fetch("SELECT * FROM alerts WHERE home_id = $1 ORDER BY triggered_at DESC", home_id)
         return [dict(r) for r in rows]
 
@@ -72,23 +63,38 @@ async def get_alerts(
 @router.patch("/{alert_id}/read")
 async def mark_alert_read(
     alert_id: uuid.UUID,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
     """Mark an alert as read."""
     async with db.acquire() as conn:
-        result = await conn.execute("UPDATE alerts SET is_read = true WHERE id = $1", alert_id)
-        if result == "UPDATE 0":
-            raise HTTPException(status_code=404, detail="Alert not found")
+        # Check ownership via home join
+        alert = await conn.fetchrow("""
+            SELECT a.id FROM alerts a
+            JOIN homes h ON a.home_id = h.id
+            WHERE a.id = $1 AND h.user_id = $2
+        """, alert_id, user_id)
+        
+        if not alert:
+            raise HTTPException(status_code=404, detail="Alert not found or unauthorized")
+
+        await conn.execute("UPDATE alerts SET is_read = true WHERE id = $1", alert_id)
         return {"status": "success"}
 
 
 @router.patch("/home/{home_id}/read-all")
 async def mark_all_alerts_read(
     home_id: uuid.UUID,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
     """Mark all alerts in a home as read."""
     async with db.acquire() as conn:
+        # Verify ownership
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", home_id, user_id)
+        if not home:
+            raise HTTPException(status_code=404, detail="Home not found or unauthorized")
+
         await conn.execute("UPDATE alerts SET is_read = true WHERE home_id = $1", home_id)
         return {"status": "success"}
 
@@ -96,12 +102,19 @@ async def mark_all_alerts_read(
 @router.post("/home/{home_id}/check", response_model=CheckAlertsResponse)
 async def run_anomaly_check(
     home_id: uuid.UUID,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
     """
     Simulates a background cron job scanning current real-time usage metrics against historical baselines.
     Generates new alerts if thresholds are breached.
     """
+    async with db.acquire() as conn:
+        # Verify ownership
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", home_id, user_id)
+        if not home:
+            raise HTTPException(status_code=404, detail="Home not found or unauthorized")
+
     new_alerts = 0
     
     async with db.acquire() as conn:

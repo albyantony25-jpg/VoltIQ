@@ -35,14 +35,14 @@ export function HomeScoreGauge({ score, subscores }: HomeScoreGaugeProps) {
     }
 
     // SVG parameters
-    const size = 200;
+    const size = 300;
     const strokeWidth = 14;
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (score / 100) * circumference;
 
     return (
-        <Card className={`border-slate-800 bg-card h-full flex flex-col relative overflow-hidden`}>
+        <Card className={`border-slate-800 bg-card h-full w-full flex flex-col relative overflow-hidden items-center justify-center py-4`}>
             {/* Ambient Background Glow */}
             <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl ${bgGradient} to-transparent rounded-full blur-3xl opacity-50 -mr-20 -mt-20 pointer-events-none`}></div>
 
@@ -50,16 +50,11 @@ export function HomeScoreGauge({ score, subscores }: HomeScoreGaugeProps) {
                 <CardTitle className="text-xl">VoltIQ Home Score</CardTitle>
                 <CardDescription>Overall unified performance metric</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col items-center justify-center pt-6 relative z-10 w-full">
+            <CardContent className="flex-1 flex flex-col items-center justify-center px-4 pt-2 relative z-10 w-full">
 
                 {/* SVG Radial Gauge */}
-                <div className="relative flex items-center justify-center mb-6">
-                    <svg
-                        className="transform -rotate-90 origin-center drop-shadow-lg"
-                        width={size}
-                        height={size}
-                        viewBox={`0 0 ${size} ${size}`}
-                    >
+                <div className="relative w-full aspect-square max-w-[280px] flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90 overflow-visible drop-shadow-xl" viewBox={`0 0 ${size} ${size}`}>
                         {/* Background track */}
                         <circle
                             cx={size / 2}

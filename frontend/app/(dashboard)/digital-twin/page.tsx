@@ -1,26 +1,18 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BatteryCharging } from "lucide-react"
+import { BatteryCharging, Play } from "lucide-react"
 import { ScenarioBuilder } from "@/components/appliances/ScenarioBuilder"
 import { SimulationResults } from "@/components/shared/SimulationResults"
-
-// Helper Hook for debounce
-function useDebounce(value: any, delay: number) {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => { setDebouncedValue(value); }, delay);
-        return () => { clearTimeout(handler); };
-    }, [value, delay]);
-    return debouncedValue;
-}
+import { useEnergyStore } from "@/stores/useEnergyStore"
+import { fetchApi } from "@/lib/api"
 
 export default function DigitalTwinPage() {
-    const MOCK_HOME_ID = "00000000-0000-0000-0000-000000000000"
+    const { activeHomeId } = useEnergyStore()
 
     const [appliances, setAppliances] = useState<any[]>([])
     const [config, setConfig] = useState({
-        home_id: MOCK_HOME_ID,
+        home_id: activeHomeId,
         scenario_name: "Optimized Future",
         changes: [],
         add_appliances: [],
@@ -31,34 +23,39 @@ export default function DigitalTwinPage() {
     const [result, setResult] = useState<any>(null)
     const [isSimulating, setIsSimulating] = useState(false)
 
-    const debouncedConfig = useDebounce(config, 800)
-
     useEffect(() => {
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/appliances?home_id=${MOCK_HOME_ID}`)
-            .then(res => res.json())
+        if (!activeHomeId) return;
+        fetchApi(`/appliances?home_id=${activeHomeId}`)
             .then(data => setAppliances(data))
-    }, [])
+    }, [activeHomeId])
 
-    // Trigger simulation automatically when state changes
-    useEffect(() => {
-        if (appliances.length === 0) return; // Wait to load
-
+    // Manual simulation trigger
+    const handleSimulate = async () => {
+        if (!activeHomeId) return;
         setIsSimulating(true)
-        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/simulation/twin`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(debouncedConfig)
-        })
-            .then(res => res.json())
-            .then(data => {
-                setResult(data)
-                setIsSimulating(false)
+        try {
+            const data = await fetchApi(`/simulation/twin`, {
+                method: "POST",
+                body: JSON.stringify({ ...config, home_id: activeHomeId })
             })
-            .catch(err => {
-                console.error(err)
-                setIsSimulating(false)
-            })
-    }, [debouncedConfig, appliances.length])
+            setResult(data)
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setIsSimulating(false)
+        }
+    }
+
+    if (!activeHomeId) {
+        return (
+            <div className="flex h-[80vh] items-center justify-center">
+                <div className="text-center space-y-4">
+                    <h2 className="text-2xl font-bold text-slate-200">No Home Selected</h2>
+                    <p className="text-slate-400">Please set up a home to access the AI digital twin.</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="w-full flex h-[calc(100vh-80px)] font-sans">
@@ -82,8 +79,20 @@ export default function DigitalTwinPage() {
                 <div className="max-w-5xl mx-auto h-full space-y-6 flex flex-col">
                     <div className="flex justify-between items-center mb-4">
                         <h1 className="text-2xl font-bold text-white">{config.scenario_name || "Simulation"} Results</h1>
+                        <button
+                            onClick={handleSimulate}
+                            disabled={isSimulating}
+                            className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)]"
+                        >
+                            {isSimulating ? (
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <Play className="w-4 h-4" />
+                            )}
+                            {isSimulating ? "Simulating..." : "Run Simulation"}
+                        </button>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 border border-slate-800 rounded-xl overflow-hidden bg-slate-900 shadow-xl relative">
                         <SimulationResults result={result} isSimulating={isSimulating} />
                     </div>
                 </div>

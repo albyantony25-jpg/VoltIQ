@@ -7,12 +7,22 @@ from models.billing import (
 )
 
 def load_tariffs() -> List[Tariff]:
-    path = os.path.join(os.path.dirname(__file__), "..", "data", "tariffs_seed.json")
+    # Use absolute path resolution for production reliability
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    path = os.path.join(base_dir, "data", "tariffs_seed.json")
+    
+    if not os.path.exists(path):
+        print(f"ERROR: Tariff seed file not found at {path}")
+        return []
+        
     try:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
             return [Tariff(**t) for t in data]
-    except Exception:
+    except Exception as e:
+        print(f"ERROR loading tariffs: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return []
 
 def get_tariff_by_id(tariff_id: str) -> Tariff:

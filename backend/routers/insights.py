@@ -23,7 +23,7 @@ limiter = Limiter(key_func=get_remote_address)
 from core.dependencies import get_db_pool, get_current_user
 from services.ai_service import generate_monthly_insights, InsightBundle
 
-router = APIRouter(prefix="/insights", tags=["AI Insights"])
+router = APIRouter(prefix="/insights", tags=["AI Insights"], redirect_slashes=False)
 
 
 class GenerateRequest(BaseModel):
@@ -40,8 +40,15 @@ async def generate_insights(
     request: Request,
     body: GenerateRequest,
     db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user),
 ) -> InsightBundle:
     """Trigger the full multi-agent AI pipeline and return the InsightBundle."""
+    async with db.acquire() as conn:
+        # Verify ownership
+        home = await conn.fetchrow("SELECT id FROM homes WHERE id = $1 AND user_id = $2", uuid.UUID(body.home_id), user_id)
+        if not home:
+            raise HTTPException(status_code=404, detail="Home not found or unauthorized")
+            
     return await generate_monthly_insights(body.home_id, body.target_month, db)
 
 
@@ -58,14 +65,15 @@ async def get_cached_insights(
     async with db.acquire() as conn:
         row = await conn.fetchrow(
             """
-            SELECT content FROM ai_insights
-            WHERE home_id = $1
-              AND insight_type = 'forecast'
-              AND (expires_at IS NULL OR expires_at > NOW())
-            ORDER BY created_at DESC
+            SELECT ai.content FROM ai_insights ai
+            JOIN homes h ON ai.home_id = h.id
+            WHERE ai.home_id = $1 AND h.user_id = $2
+              AND ai.insight_type = 'forecast'
+              AND (ai.expires_at IS NULL OR ai.expires_at > NOW())
+            ORDER BY ai.created_at DESC
             LIMIT 1
             """,
-            home_id,
+            home_id, user_id
         )
     if not row:
         return None

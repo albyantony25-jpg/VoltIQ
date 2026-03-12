@@ -2,7 +2,7 @@ import json
 import uuid
 import asyncio
 from typing import List, Optional, Dict, Any, AsyncGenerator
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import asyncpg
@@ -18,7 +18,7 @@ from core.config import settings
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/chat", tags=["AI Chat"])
+router = APIRouter(prefix="/chat", tags=["AI Agent Chat"], redirect_slashes=False)
 
 class ChatRequest(BaseModel):
     home_id: uuid.UUID
@@ -189,11 +189,13 @@ def execute_tool(name: str, args: dict) -> str:
 # Routes
 # ---------------------------------------------------------------------------
 
-@router.get("/sessions/{user_id}", response_model=List[dict])
+@router.get("/sessions/{user_id_path}", response_model=List[dict])
 async def list_sessions(
-    user_id: uuid.UUID,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    user_id_path: uuid.UUID,
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
+    """List sessions for the authenticated user (ignores path param in favor of token)."""
     if db is None: return []
     try:
         async with db.acquire() as conn:
@@ -202,17 +204,19 @@ async def list_sessions(
     except Exception:
         return []
 
-@router.get("/sessions/{user_id}/messages/{session_id}")
+@router.get("/sessions/{user_id_path}/messages/{session_id}")
 async def get_session_history(
-    user_id: uuid.UUID,
+    user_id_path: uuid.UUID,
     session_id: uuid.UUID,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
+    """Get history for a specific session, verifying ownership via token."""
     if db is None: return {"messages": []}
     async with db.acquire() as conn:
         row = await conn.fetchrow("SELECT messages FROM chat_sessions WHERE id = $1 AND user_id = $2", session_id, user_id)
         if not row:
-            return {"messages": []}
+            raise HTTPException(status_code=404, detail="Session not found or unauthorized")
         return {"messages": json.loads(row['messages']) if isinstance(row['messages'], str) else row['messages']}
 
 @router.delete("/sessions/{id}")
@@ -223,6 +227,10 @@ async def delete_session(
 ):
     if db is None: return {"status": "success"}
     async with db.acquire() as conn:
+        # Verify ownership
+        row = await conn.fetchrow("SELECT id FROM chat_sessions WHERE id = $1 AND user_id = $2", id, user_id)
+        if not row:
+            raise HTTPException(status_code=404, detail="Session not found or unauthorized")
         await conn.execute("DELETE FROM chat_sessions WHERE id = $1", id)
     return {"status": "success"}
 
@@ -233,9 +241,8 @@ async def chat_stream(
     body: ChatRequest,
     background_tasks: BackgroundTasks,
     db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ):
-    # Removing current_user dependency so it works for local un-authed mock tests exactly like insights
-    user_id = uuid.UUID("11111111-1111-1111-1111-111111111111") 
     session_id = body.session_id or uuid.uuid4()
     
     # 1. Fetch History

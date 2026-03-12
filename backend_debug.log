@@ -1,0 +1,25 @@
+INFO:     Will watch for changes in these directories: ['C:\\Users\\user\\Desktop\\VoltIQ\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [15316] using WatchFiles
+INFO:     Started server process [10172]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+Initializing Database Pool...
+INFO:     127.0.0.1:59673 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59674 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59709 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59710 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59743 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59744 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59785 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59786 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found
+WARNING:root:Auth failed (401: Missing authentication header), falling back to dummy user for local dev.
+INFO:     127.0.0.1:59833 - "GET /api/v1/alerts/home/00000000-0000-0000-0000-000000000000 HTTP/1.1" 404 Not Found

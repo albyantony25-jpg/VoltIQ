@@ -1,41 +1,48 @@
-import jwt
+import uuid
+import httpx
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from core.config import settings
-import uuid
 
 security = HTTPBearer(auto_error=False)
 
-def verify_token(credentials: HTTPAuthorizationCredentials = Security(security)) -> uuid.UUID:
-    """Verifies the JWT token from Supabase and returns the user ID."""
-    try:
-        if not credentials:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authentication header")
-        token = credentials.credentials
-        # Supabase signs tokens with the JWT_SECRET
-        payload = jwt.decode(
-            token, 
-            settings.JWT_SECRET, 
-            algorithms=["HS256"],
-            audience="authenticated"
+async def verify_token(credentials: HTTPAuthorizationCredentials = Security(security)) -> uuid.UUID:
+    """Verifies the JWT token from Supabase using their REST API directly and returns the user ID."""
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Missing authentication header"
         )
-        
-        user_id = payload.get("sub")
-        if user_id is None:
+    
+    token = credentials.credentials
+    
+    try:
+        # Use HTTPX to call Supabase auth endpoint, avoiding all Python SDK dependency issues/compilation crashes
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{settings.SUPABASE_URL}/auth/v1/user",
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "apikey": settings.SUPABASE_SERVICE_KEY
+                }
+            )
+            
+        if response.status_code != 200:
+            print(f"[SECURITY] Supabase get_user failed with status {response.status_code}: {response.text}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
             )
-        return uuid.UUID(user_id)
+            
+        user_data = response.json()
+        print(f"[SECURITY] Successfully verified user via REST API: {user_data['id']}")
+        return uuid.UUID(user_data["id"])
         
-    except (jwt.ExpiredSignatureError, jwt.PyJWTError, HTTPException) as e:
-        # For local development with placeholder Supabase URL, return the dummy user ID instead of failing
-        if "placeholder.supabase.co" in settings.SUPABASE_URL or settings.SUPABASE_URL == "your-supabase-url" or True:
-            import logging
-            logging.warning(f"Auth failed ({e}), falling back to dummy user for local dev.")
-            return uuid.UUID('00000000-0000-0000-0000-000000000000')
-        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[SECURITY] FASTAPI JWT AUTH EXCEPTION: {repr(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail=f"Could not validate credentials: {str(e)}",
         )

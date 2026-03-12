@@ -1,5 +1,7 @@
 import math
 import uuid
+import json
+from datetime import datetime
 from typing import List, Dict, Optional
 from models.appliance import ApplianceBase, ApplianceCategory, EfficiencyClass
 from models.simulation import (
@@ -297,3 +299,82 @@ class ModelingEngine:
             anomalies=[], # Typically populated externally by querying usage_logs
             saving_opportunities=savings
         )
+
+    @classmethod
+    async def calculate_home_dashboard(cls, home_id: uuid.UUID, db) -> Dict:
+        """
+        Fetches authentic appliance data from DB and returns a full dashboard payload.
+        """
+        async with db.acquire() as conn:
+            home = await conn.fetchrow("SELECT tariff_id FROM homes WHERE id = $1", home_id)
+            if not home:
+                return {"has_appliances": False}
+                
+            appliances_rows = await conn.fetch("SELECT * FROM appliances WHERE home_id = $1 AND is_active = true", home_id)
+            
+            if not appliances_rows:
+                return {"has_appliances": False}
+                
+            appliances = []
+            for r in appliances_rows:
+                try: category_enum = ApplianceCategory(r['category'])
+                except ValueError: category_enum = ApplianceCategory.other
+                
+                eff_enum = None
+                if r['efficiency_class']:
+                    try: eff_enum = EfficiencyClass(r['efficiency_class'])
+                    except ValueError: pass
+                        
+                app = ApplianceBase(
+                    name=r.get('name') or 'Appliance',
+                    brand=r.get('brand') or 'Generic',
+                    category=category_enum,
+                    rated_watts=float(r.get('rated_watts') or 0),
+                    standby_watts=float(r.get('standby_watts') or 0),
+                    efficiency_class=eff_enum,
+                    age_years=r.get('age_years') or 0,
+                    is_active=r.get('is_active') if r.get('is_active') is not None else True,
+                    usage_hours=float(r.get('usage_hours') or 0)
+                )
+                app.id = r.get('id')
+                appliances.append(app)
+                
+            engine = cls()
+            summary = engine.simulate_home_total(appliances, month=datetime.now().month)
+            
+            projected_bill = float(summary.total_monthly_kwh) * 7.5
+            fixed_charge = 0.0
+            
+            if home['tariff_id']:
+                tariff = await conn.fetchrow("SELECT * FROM tariffs WHERE id::text = $1", str(home['tariff_id']))
+                if tariff:
+                    fixed_charge = float(tariff['fixed_charge'] or 0)
+                    if tariff['tariff_type'] == 'flat':
+                        rate = float(tariff['flat_rate'] or 7.5)
+                        projected_bill = float(summary.total_monthly_kwh) * rate
+                    elif tariff['tariff_type'] == 'slab' and tariff['slab_config']:
+                        slabs = json.loads(tariff['slab_config']) if isinstance(tariff['slab_config'], str) else tariff['slab_config']
+                        slabs = slabs or []
+                        remaining = float(summary.total_monthly_kwh)
+                        calc_bill = 0.0
+                        for slab in slabs:
+                            limit = float('inf')
+                            if slab.get('to') is not None:
+                                limit = slab['to'] - slab['from'] + 1
+                            units = min(remaining, limit)
+                            if units > 0:
+                                calc_bill += units * slab['rate']
+                                remaining -= units
+                        projected_bill = calc_bill
+                        
+            projected_bill += fixed_charge
+            
+            total_eff = sum(engine._get_efficiency_score(a.efficiency_class) for a in appliances)
+            avg_eff = int(total_eff / len(appliances)) if appliances else 50
+            
+            return {
+                "has_appliances": True,
+                "summary": summary.model_dump() if hasattr(summary, 'model_dump') else summary.dict(),
+                "projected_bill": round(projected_bill, 2),
+                "home_score": avg_eff
+            }

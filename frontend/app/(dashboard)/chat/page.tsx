@@ -4,25 +4,27 @@ import { useState, useEffect, useRef } from "react"
 import { ChatInterface, Message } from "@/components/ai/ChatInterface"
 import { SuggestedQuestions } from "@/components/ai/SuggestedQuestions"
 import { MessageSquarePlus, MessageSquare, Trash2, X, ChevronLeft } from "lucide-react"
+import { useEnergyStore } from "@/stores/useEnergyStore"
+import { createBrowserClient } from "@/lib/supabase-browser"
+import { fetchApi } from "@/lib/api"
 
 export default function ChatDashboardPage() {
-    const MOCK_HOME_ID = "00000000-0000-0000-0000-000000000000"
-    const MOCK_USER_ID = "11111111-1111-1111-1111-111111111111"
+    const { activeHomeId } = useEnergyStore()
+    const [userId, setUserId] = useState<string | null>(null)
+    const [sessionToken, setSessionToken] = useState<string | null>(null)
 
     const [sessions, setSessions] = useState<any[]>([])
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null)
     const [messages, setMessages] = useState<Message[]>([])
     const [isStreaming, setIsStreaming] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false)
 
     // Load Sessions
-    const loadSessions = async () => {
+    const loadSessions = async (uid: string) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat/sessions/${MOCK_USER_ID}`)
-            if (res.ok) {
-                const data = await res.json()
-                setSessions(data)
-            }
+            const data = await fetchApi(`/chat/sessions/${uid}`)
+            setSessions(data)
         } catch (e) {
             console.error("Failed to load sessions")
         }
@@ -30,39 +32,48 @@ export default function ChatDashboardPage() {
 
     // Load specific session history
     const loadHistory = async (sessId: string) => {
+        if (!userId) return;
         setActiveSessionId(sessId)
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat/sessions/${MOCK_USER_ID}/messages/${sessId}`)
-            if (res.ok) {
-                const data = await res.json()
-                // Convert to frontend model
-                const formatted = data.messages.map((m: any, idx: number) => ({
-                    id: `db_${idx}`,
-                    role: m.role,
-                    content: m.content || JSON.stringify(m.tool_calls) // Fallback for tool payloads
-                })).filter((m: any) => m.role !== 'system') // Hide system prompts
+            const data = await fetchApi(`/chat/sessions/${userId}/messages/${sessId}`)
+            // Convert to frontend model
+            const formatted = data.messages.map((m: any, idx: number) => ({
+                id: `db_${idx}`,
+                role: m.role,
+                content: m.content || JSON.stringify(m.tool_calls) // Fallback for tool payloads
+            })).filter((m: any) => m.role !== 'system') // Hide system prompts
 
-                setMessages(formatted)
-            }
+            setMessages(formatted)
+            setIsHistoryOpen(false)
         } catch (e) {
             console.error(e)
         }
     }
 
     useEffect(() => {
-        loadSessions()
+        const initAuth = async () => {
+            const supabase = createBrowserClient()
+            const { data } = await supabase.auth.getSession()
+            if (data?.session?.user) {
+                setUserId(data.session.user.id)
+                setSessionToken(data.session.access_token)
+                loadSessions(data.session.user.id)
+            }
+        }
+        initAuth()
     }, [])
 
     const createNewChat = () => {
         setActiveSessionId(null)
         setMessages([])
         setError(null)
+        setIsHistoryOpen(false)
     }
 
     const deleteSession = async (sessId: string, e: React.MouseEvent) => {
         e.stopPropagation()
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat/sessions/${sessId}`, { method: 'DELETE' })
+            await fetchApi(`/chat/sessions/${sessId}`, { method: 'DELETE' })
             setSessions(s => s.filter(x => x.id !== sessId))
             if (activeSessionId === sessId) createNewChat()
         } catch (e) { }
@@ -81,11 +92,14 @@ export default function ChatDashboardPage() {
         setIsStreaming(true)
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/chat/stream`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/stream`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${sessionToken}`
+                },
                 body: JSON.stringify({
-                    home_id: MOCK_HOME_ID,
+                    home_id: activeHomeId,
                     message: text,
                     session_id: activeSessionId
                 })
@@ -143,8 +157,8 @@ export default function ChatDashboardPage() {
             ))
 
             // Refresh sessions list if it was a new chat
-            if (!activeSessionId) {
-                loadSessions()
+            if (!activeSessionId && userId) {
+                loadSessions(userId)
             }
 
         } catch (err: any) {
@@ -158,15 +172,23 @@ export default function ChatDashboardPage() {
         <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-140px)] w-full pb-6 relative z-10">
 
             {/* Left Panel: Sessions List */}
-            <div className={`w-full lg:w-1/4 h-full bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col shadow-inner shrink-0 ${activeSessionId ? 'hidden lg:flex' : 'flex'}`}>
+            <div className={`w-full lg:w-1/4 h-full bg-slate-900 border border-slate-800 rounded-xl p-4 flex-col shadow-inner shrink-0 lg:flex ${isHistoryOpen ? 'flex absolute inset-0 z-50 m-0 rounded-none md:rounded-xl md:m-4 md:w-[calc(100%-2rem)]' : 'hidden'}`}>
+                
+                <div className="flex justify-between items-center mb-4 lg:hidden">
+                    <h3 className="font-bold text-slate-200">Chat History</h3>
+                    <button onClick={() => setIsHistoryOpen(false)} className="p-2 bg-slate-800 rounded-lg text-slate-400 hover:text-white">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
                 <button
                     onClick={createNewChat}
-                    className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 transition-all mb-4"
+                    className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg shadow-md flex items-center justify-center gap-2 transition-all mb-4 min-h-[44px]"
                 >
                     <MessageSquarePlus className="w-4 h-4" /> New Chat
                 </button>
 
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-2">History</h4>
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-2 lg:block hidden">History</h4>
 
                 <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar pr-2">
                     {sessions.map(s => (
@@ -197,14 +219,16 @@ export default function ChatDashboardPage() {
             </div>
 
             {/* Right Panel: Chat Interface */}
-            <div className={`w-full lg:w-3/4 flex-1 h-full flex flex-col min-w-0 ${!activeSessionId ? 'hidden lg:flex' : 'flex'}`}>
-                {activeSessionId && (
-                    <div className="lg:hidden mb-4">
-                        <button onClick={() => setActiveSessionId(null)} className="flex items-center gap-2 text-slate-400 hover:text-white">
-                            <ChevronLeft className="w-4 h-4" /> Back to history
-                        </button>
-                    </div>
-                )}
+            <div className={`w-full lg:w-3/4 flex-1 h-full flex flex-col min-w-0 flex`}>
+                <div className="lg:hidden flex justify-between items-center mb-3 px-2">
+                    <h2 className="font-bold text-slate-200 flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-indigo-400" />
+                        Volt Assistant
+                    </h2>
+                    <button onClick={() => setIsHistoryOpen(true)} className="text-xs font-semibold px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg flex items-center gap-2 min-h-[44px]">
+                        History
+                    </button>
+                </div>
                 <div className="flex-1 pb-4 min-h-0">
                     <ChatInterface
                         messages={messages}

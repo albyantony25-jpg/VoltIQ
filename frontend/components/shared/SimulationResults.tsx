@@ -101,9 +101,11 @@ export const SimulationResults = ({ result, isSimulating }: { result: any, isSim
             </div>
 
             {/* Chart */}
-            <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 flex-1 min-h-[300px]">
-                <h4 className="text-slate-300 font-semibold mb-6">Projection: Baseline vs Twin</h4>
-                <ResponsiveContainer width="100%" height="100%">
+            <div className="bg-slate-900 p-6 rounded-xl border border-slate-800 flex-1 flex flex-col min-h-[300px]">
+                <h4 className="text-slate-300 font-semibold mb-6 shrink-0">Projection: Baseline vs Twin</h4>
+                <div className="flex-1 w-full min-h-0 relative overflow-hidden">
+                    <div className="absolute inset-0">
+                        <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={result.month_by_month} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
                         <XAxis dataKey="month" stroke="#666" tick={{ fill: '#888', fontSize: 12 }} />
@@ -117,6 +119,8 @@ export const SimulationResults = ({ result, isSimulating }: { result: any, isSim
                         <Line type="monotone" dataKey="simulated_kwh" name="Digital Twin (kWh)" stroke="#6366f1" strokeWidth={3} dot={{ r: 4, fill: '#6366f1', strokeWidth: 0 }} activeDot={{ r: 6 }} />
                     </LineChart>
                 </ResponsiveContainer>
+            </div>
+                </div>
             </div>
 
             {/* Recommendations / ROI */}

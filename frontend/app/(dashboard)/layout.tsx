@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -17,6 +17,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { DemoBanner } from '@/components/shared/DemoBanner';
 import { FloatingHelp } from '@/components/shared/FloatingHelp';
 import { TourOverlay } from '@/components/shared/TourOverlay';
+import { useEnergyStore } from '@/stores/useEnergyStore';
+import { fetchApi } from '@/lib/api';
 
 function SidebarItem({ item, isActive }: { item: any, isActive: boolean }) {
     const [showTooltip, setShowTooltip] = useState(false);
@@ -35,26 +37,26 @@ function SidebarItem({ item, isActive }: { item: any, isActive: boolean }) {
             <Link
                 href={item.href}
                 data-tour={item.tourId}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${isActive
-                    ? 'text-accent font-semibold'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                className={`relative flex items-center md:justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${isActive
+                    ? 'text-amber-400 font-semibold'
+                    : 'text-neutral-500 hover:text-white hover:bg-white/5'
                     }`}
             >
                 {isActive && (
                     <motion.div
                         layoutId="active-sidebar-nav"
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-accent rounded-r-full"
+                        className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-r-full"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                     />
                 )}
-                {isActive && <div className="absolute inset-0 bg-accent/10 rounded-lg -z-10" />}
-                <item.icon className="h-5 w-5 z-10 box-content" />
-                <span className="z-10">{item.name}</span>
+                {isActive && <div className="absolute inset-0 bg-amber-500/10 rounded-lg -z-10" />}
+                <item.icon className="h-5 w-5 z-10 box-content flex-shrink-0" />
+                <span className="z-10 md:hidden lg:block text-sm whitespace-nowrap">{item.name}</span>
                 {item.badge && (
-                    <span className={`ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10 ${item.badge === 'AI' ? 'bg-indigo-500/20 text-indigo-400' :
+                    <span className={`ml-auto md:hidden lg:inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10 ${item.badge === 'AI' ? 'bg-indigo-500/20 text-indigo-400' :
                         item.badge === 'NEW' ? 'bg-emerald-500/20 text-emerald-400' :
                             'bg-amber-500/20 text-amber-500'
                         }`}>
@@ -64,7 +66,8 @@ function SidebarItem({ item, isActive }: { item: any, isActive: boolean }) {
             </Link>
 
             <AnimatePresence>
-                {showTooltip && (
+                {/* Tooltip on tablet icon-only mode or desktop custom tooltip */}
+                {(showTooltip || (hasHovered && item.tooltip)) && (
                     <motion.div
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -80,6 +83,13 @@ function SidebarItem({ item, isActive }: { item: any, isActive: boolean }) {
     );
 }
 
+const bottomNavItems = [
+    { name: 'Overview', href: '/overview', icon: LayoutDashboard },
+    { name: 'Appliances', href: '/appliances', icon: Home },
+    { name: 'Insights', href: '/insights', icon: Activity },
+    { name: 'Chat', href: '/chat', icon: BrainCircuit },
+];
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
@@ -90,55 +100,73 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [user, setUser] = useState<any>(null);
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [showWizard, setShowWizard] = useState(false);
+    const { setActiveHome, setActiveHomeId, initStore } = useEnergyStore();
 
     useEffect(() => {
         const supabase = createBrowserClient();
+        
         const checkAuthAndHome = async () => {
-            // Check auth session
-            const { data: { session } } = await supabase.auth.getSession();
+            try {
+                console.log("[Layout] Initializing auth and store...");
+                const { data: { session }, error } = await supabase.auth.getSession();
 
-            if (!session) {
-                // [AUDIT] console.log("Local Dev: Bypassing Supabase auth since we have no real backend keys.");
-                const dummyUserId = '00000000-0000-0000-0000-000000000000';
-                setUser({ id: dummyUserId, email: 'demo@example.com', user_metadata: { full_name: 'Local Demo User' } });
-                setIsAuthenticated(true);
-
-                // Allow the wizard to show up locally if the mock database has no homes,
-                // but we also bypass query errors gracefully
-                const { data: homes, error } = await supabase
-                    .from('homes')
-                    .select('*')
-                    .eq('user_id', dummyUserId)
-                    .limit(1);
-
-                if (error || !homes || homes.length === 0) {
-                    setShowWizard(true);
+                if (error) {
+                    console.error("[Layout] Supabase session error:", error);
+                    window.location.href = '/login';
+                    return;
                 }
 
+                if (!session?.user) {
+                    console.warn("[Layout] No user session found, redirecting to /login");
+                    window.location.href = '/login';
+                    return;
+                }
+
+                console.log("[Layout] User authenticated:", session.user.id);
+                setUser(session.user);
+                setIsAuthenticated(true);
+
+                // Check if user has a home configured
+                console.log("[Layout] Calling initStore()...");
+                try {
+                    await initStore();
+                    const currentState = useEnergyStore.getState();
+                    if (!currentState.activeHomeId) {
+                        console.log("[Layout] No home found in store, redirecting to /setup");
+                        window.location.href = '/setup';
+                        return;
+                    }
+                } catch (err: any) {
+                    console.error("[Layout] Fatal error in checkAuthAndHome:", err);
+                    window.location.href = '/setup';
+                    return;
+                }
+                console.log("[Layout] initStore() completed.");
+            } catch (err: any) {
+                console.error("[Layout] Fatal error in checkAuthAndHome:", err);
+            } finally {
                 setIsLoading(false);
-                return;
             }
-
-            setUser(session.user);
-            setIsAuthenticated(true);
-
-            // Check if user has a home configured
-            const { data: homes, error } = await supabase
-                .from('homes')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .limit(1);
-
-            if (!error && (!homes || homes.length === 0)) {
-                setShowWizard(true);
-            }
-
-            setIsLoading(false);
         };
 
         checkAuthAndHome();
-    }, [router]);
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
+                window.location.href = '/login';
+            }
+            if (event === 'SIGNED_IN') {
+                initStore().then(() => {
+                    const currentState = useEnergyStore.getState();
+                    if (!currentState.activeHomeId) {
+                        window.location.href = '/setup';
+                    }
+                });
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [router, initStore]);
 
     if (isLoading) {
         return (
@@ -171,15 +199,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <div className="flex flex-1 overflow-hidden relative">
 
-                {/* Home Setup Wizard Modal */}
-                {showWizard && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                        <div className="w-full max-w-2xl px-4">
-                            <HomeSetupWizard onComplete={() => setShowWizard(false)} user={user} />
-                        </div>
-                    </div>
-                )}
-
                 {/* Mobile Sidebar Overlay */}
                 {isMobileMenuOpen && (
                     <div
@@ -190,24 +209,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Sidebar */}
                 <aside
-                    className={`fixed inset-y-0 left-0 z-30 w-64 border-r border-border bg-card shadow-lg md:static md:translate-x-0 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                    className={`fixed inset-y-0 left-0 z-40 bg-[#0d0d0d] border-r border-[#1a1a1a] shadow-2xl transition-all duration-300 ease-in-out flex flex-col
+                    w-[240px] md:static md:w-[64px] lg:w-[240px]
+                    ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+                    `}
                 >
-                    <div className="p-6 border-b border-border flex items-center justify-between">
+                    <div className="p-4 md:p-3 lg:p-6 border-b border-border flex items-center justify-between md:justify-center lg:justify-between h-[60px] lg:h-[72px]">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 bg-slate-950 rounded-lg flex items-center justify-center shadow-sm border border-slate-800 shadow-amber-500/10">
+                            <div className="h-8 w-8 bg-slate-950 rounded-lg flex items-center justify-center shadow-sm border border-slate-800 shadow-amber-500/10 shrink-0">
                                 <VQLogo className="h-5 w-5" />
                             </div>
-                            <h2 className="text-xl font-bold tracking-tight">VoltIQ</h2>
+                            <h2 className="text-xl font-bold tracking-tight md:hidden lg:block whitespace-nowrap overflow-hidden">VoltIQ</h2>
                         </div>
                         <button className="md:hidden p-1 text-muted-foreground" onClick={() => setIsMobileMenuOpen(false)}>
                             <X className="h-5 w-5" />
                         </button>
                     </div>
 
-                    <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto h-[calc(100vh-140px)]">
+                    <nav className="flex-1 p-2 lg:p-4 flex flex-col gap-1 overflow-y-auto h-[calc(100vh-140px)]">
                         {['Main', 'Intelligence', 'Advanced'].map(group => (
                             <div key={group}>
-                                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 px-3">
+                                <div className="text-[10px] lg:text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 mt-4 px-2 lg:px-3 text-center lg:text-left md:hidden lg:block">
                                     {group}
                                 </div>
                                 {navItems.filter(i => i.group === group).map(item => {
@@ -226,7 +248,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <TopNav />
 
                     {/* Page Content */}
-                    <div className="flex-1 overflow-auto p-4 sm:p-8 bg-muted/10 relative">
+                    <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 bg-muted/10 relative pb-20 md:pb-4">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={pathname}
@@ -234,13 +256,43 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                className="h-full"
+                                className="h-full min-w-0"
                             >
-                                {children}
+                                <Suspense fallback={
+                                    <div className="flex h-full items-center justify-center p-8">
+                                        <div className="animate-spin h-8 w-8 text-indigo-500 rounded-full border-4 border-t-transparent"></div>
+                                    </div>
+                                }>
+                                    {children}
+                                </Suspense>
                             </motion.div>
                         </AnimatePresence>
                     </div>
                 </main>
+            </div>
+
+            {/* Mobile Bottom Navigation */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border flex justify-around items-center h-16 pb-safe">
+                {bottomNavItems.map(item => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`flex flex-col items-center justify-center w-full h-full min-h-[44px] ${isActive ? 'text-accent' : 'text-muted-foreground'}`}
+                        >
+                            <item.icon className="h-5 w-5 mb-1" />
+                            <span className="text-[10px] font-medium">{item.name}</span>
+                        </Link>
+                    )
+                })}
+                <button
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className="flex flex-col items-center justify-center w-full h-full min-h-[44px] text-muted-foreground"
+                >
+                    <Menu className="h-5 w-5 mb-1" />
+                    <span className="text-[10px] font-medium">More</span>
+                </button>
             </div>
         </div>
     );

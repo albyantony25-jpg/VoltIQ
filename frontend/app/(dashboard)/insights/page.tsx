@@ -8,48 +8,67 @@ import { AnomalyAlert } from "@/components/ai/AnomalyAlert"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RefreshCw, Sparkles, BrainCircuit } from "lucide-react"
 import { motion, useReducedMotion } from "framer-motion"
+import { useEnergyStore } from "@/stores/useEnergyStore"
+import { fetchApi } from "@/lib/api"
 
 export default function InsightsDashboardPage() {
     const queryClient = useQueryClient()
     const prefersReducedMotion = useReducedMotion()
-    const MOCK_HOME_ID = "00000000-0000-0000-0000-000000000000"
+    const { activeHomeId } = useEnergyStore()
     const TARGET_MONTH = "2026-02"
 
     // 1. Fetch cached insights
     const { data: insightsData, isLoading, isError } = useQuery({
-        queryKey: ['insights', MOCK_HOME_ID],
+        queryKey: ['insights', activeHomeId],
         queryFn: async () => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/insights/${MOCK_HOME_ID}`)
-            if (!res.ok) {
-                if (res.status === 404) return null;
-                throw new Error("Failed to fetch insights")
+            if (!activeHomeId) return null;
+            try {
+                const data = await fetchApi(`/insights/${activeHomeId}`)
+                return data;
+            } catch (err: any) {
+                if (err.message.includes("404")) return null;
+                throw err;
             }
-            const data = await res.json()
-            return data;
         },
+        enabled: !!activeHomeId,
         staleTime: 5 * 60 * 1000,
         retry: 1
+    })
+
+    // Check if home has any appliances
+    const { data: dashboard } = useQuery({
+        queryKey: ['home_dashboard', activeHomeId],
+        queryFn: () => fetchApi(`/homes/${activeHomeId}/dashboard`),
+        enabled: !!activeHomeId,
+        staleTime: 5 * 60 * 1000
     })
 
     // 2. Mutation to trigger AI pipeline
     const pipelineMutation = useMutation({
         mutationFn: async () => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/insights/generate`, {
+            return await fetchApi(`/insights/generate`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ home_id: MOCK_HOME_ID, target_month: TARGET_MONTH })
+                body: JSON.stringify({ home_id: activeHomeId, target_month: TARGET_MONTH })
             })
-            if (!res.ok) throw new Error("Pipeline failed")
-            return res.json()
         },
         onSuccess: (data) => {
-            queryClient.setQueryData(['insights', MOCK_HOME_ID], data)
+            queryClient.setQueryData(['insights', activeHomeId], data)
         }
     })
 
     const isGenerating = pipelineMutation.isPending;
 
     // --- RENDER EMPTY STATE ---
+    if (dashboard && !dashboard.has_appliances) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 mt-10">
+                <BrainCircuit className="w-16 h-16 text-slate-700 mb-4" />
+                <h2 className="text-2xl font-bold text-slate-200">No Appliances Found</h2>
+                <p className="text-slate-400 mt-2">AI cannot generate insights for an empty home.</p>
+            </div>
+        )
+    }
+
     if (!insightsData && !isLoading && !isGenerating) {
         return (
             <motion.div

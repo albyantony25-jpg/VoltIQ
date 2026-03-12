@@ -34,9 +34,10 @@ export function SlabBreakdownChart({ slabs }: SlabBreakdownChartProps) {
                 <CardTitle className="text-xl">Energy Slabs Breakdown</CardTitle>
                 <CardDescription>Units split across tiered pricing</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col pt-4">
-                <div className="h-[200px] w-full mb-6">
-                    <ResponsiveContainer width="100%" height="100%">
+            <CardContent className="flex-1 flex flex-col pt-4 overflow-hidden">
+                <div className="h-[200px] w-full mb-6 relative min-h-0 flex-shrink-0">
+                    <div className="absolute inset-0">
+                        <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.4} />
                             <XAxis
@@ -79,10 +80,11 @@ export function SlabBreakdownChart({ slabs }: SlabBreakdownChartProps) {
                                 ))}
                             </Bar>
                         </BarChart>
-                    </ResponsiveContainer>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
-                <div className="rounded-md border border-slate-800 overflow-hidden text-sm flex-1">
+                <div className="rounded-md border flex-1 border-slate-800 overflow-y-auto overflow-x-hidden text-sm custom-scrollbar min-h-0">
                     <table className="w-full text-left">
                         <thead className="bg-slate-800/50 text-slate-400 text-xs uppercase">
                             <tr>

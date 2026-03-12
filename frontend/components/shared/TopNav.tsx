@@ -5,56 +5,72 @@ import { Bell, CheckCircle2, AlertTriangle, Info, Settings2 } from "lucide-react
 import { formatDistanceToNow } from "date-fns"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { motion, useReducedMotion } from "framer-motion"
+import { fetchApi } from "@/lib/api"
+import { useEnergyStore } from "@/stores/useEnergyStore"
+import { createBrowserClient } from "@/lib/supabase-browser"
 
 export function TopNav() {
     const [isOpen, setIsOpen] = useState(false)
+    const [hasSession, setHasSession] = useState(false)
     const queryClient = useQueryClient()
     const prefersReducedMotion = useReducedMotion()
-    const MOCK_HOME_ID = "00000000-0000-0000-0000-000000000000"
+    const { activeHomeId } = useEnergyStore()
+    const supabase = createBrowserClient()
+
+    // Check session to guard queries
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            setHasSession(!!session)
+        }
+        checkSession()
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setHasSession(!!session)
+        })
+
+        return () => subscription.unsubscribe()
+    }, [supabase])
 
     // Fetch Alerts
     const { data: alerts = [], isLoading } = useQuery({
-        queryKey: ['alerts', MOCK_HOME_ID],
+        queryKey: ['alerts', activeHomeId],
         queryFn: async () => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/alerts/home/${MOCK_HOME_ID}`)
-            if (!res.ok) throw new Error("Failed to fetch alerts")
-            return res.json()
+            if (!activeHomeId) return []
+            return fetchApi(`/alerts/home/${activeHomeId}`)
         },
+        enabled: !!activeHomeId && hasSession,
         refetchInterval: 30000 // Poll every 30s
     })
 
     // Run Cron Check (Mocking the backend cron job hitting every hour)
     const runCronMutation = useMutation({
         mutationFn: async () => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/alerts/home/${MOCK_HOME_ID}/check`, { method: 'POST' })
-            if (!res.ok) throw new Error("Cron failed")
-            return res.json()
+            if (!activeHomeId) return
+            return fetchApi(`/alerts/home/${activeHomeId}/check`, { method: 'POST' })
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['alerts', MOCK_HOME_ID] })
+            queryClient.invalidateQueries({ queryKey: ['alerts', activeHomeId] })
         }
     })
 
     // Mark as Read
     const markReadMutation = useMutation({
         mutationFn: async (alertId: string) => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/alerts/${alertId}/read`, { method: 'PATCH' })
-            if (!res.ok) throw new Error("Failed to update")
-            return res.json()
+            return fetchApi(`/alerts/${alertId}/read`, { method: 'PATCH' })
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['alerts', MOCK_HOME_ID] })
+            queryClient.invalidateQueries({ queryKey: ['alerts', activeHomeId] })
         }
     })
 
     const markAllReadMutation = useMutation({
         mutationFn: async () => {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/alerts/home/${MOCK_HOME_ID}/read-all`, { method: 'PATCH' })
-            if (!res.ok) throw new Error("Failed to update all")
-            return res.json()
+            if (!activeHomeId) return
+            return fetchApi(`/alerts/home/${activeHomeId}/read-all`, { method: 'PATCH' })
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['alerts', MOCK_HOME_ID] })
+            queryClient.invalidateQueries({ queryKey: ['alerts', activeHomeId] })
             setIsOpen(false)
         }
     })

@@ -25,10 +25,11 @@ export function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
                 <CardTitle className="text-xl">Energy by Category</CardTitle>
                 <CardDescription>Major consumption zones in your home</CardDescription>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col sm:flex-row items-center justify-center p-6">
-                <div className="w-full sm:w-1/2 h-[250px] relative">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
+            <CardContent className="flex-1 flex flex-col sm:flex-row items-center justify-center p-6 gap-6">
+                <div className="flex-1 w-full h-[250px] relative">
+                    <div className="absolute inset-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
                             <Pie
                                 data={data}
                                 cx="50%"
@@ -66,7 +67,8 @@ export function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
                                 }}
                             />
                         </PieChart>
-                    </ResponsiveContainer>
+                        </ResponsiveContainer>
+                    </div>
                     {/* Inner Label */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <span className="text-3xl font-bold text-white tracking-tight">{Math.round(totalKwh)}</span>
@@ -74,8 +76,8 @@ export function CategoryBreakdownChart({ data }: CategoryBreakdownChartProps) {
                     </div>
                 </div>
 
-                <div className="w-full sm:w-1/2 mt-6 sm:mt-0 px-4">
-                    <div className="space-y-4">
+                <div className="w-full sm:w-1/2 flex-shrink-0 mt-6 sm:mt-0 px-4 max-h-[250px] overflow-y-auto custom-scrollbar overflow-x-hidden">
+                    <div className="space-y-3 pr-2 py-1">
                         {data.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between group cursor-default">
                                 <div className="flex items-center gap-3">

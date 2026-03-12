@@ -2,17 +2,28 @@
 
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
+import { useQuery } from "@tanstack/react-query"
 
 const ReportPDFLink = dynamic(() => import("@/components/reports/ReportPDFLink"), { ssr: false })
 const ReportPDFViewer = dynamic(() => import("@/components/reports/ReportPDFViewer"), { ssr: false })
 import { FileText, Loader2, RefreshCw, Download } from "lucide-react"
+import { useEnergyStore } from "@/stores/useEnergyStore"
+import { fetchApi } from "@/lib/api"
 
 export default function ReportsPage() {
-    const MOCK_HOME_ID = "00000000-0000-0000-0000-000000000000"
+    const { activeHomeId } = useEnergyStore()
     const [month, setMonth] = useState("August 2026")
     const [reportData, setReportData] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [isClient, setIsClient] = useState(false)
+
+    // Check if home is configured and has appliances before letting them generate
+    const { data: dashboard } = useQuery({
+        queryKey: ['home_dashboard', activeHomeId],
+        queryFn: () => fetchApi(`/homes/${activeHomeId}/dashboard`),
+        enabled: !!activeHomeId,
+        staleTime: 5 * 60 * 1000
+    })
 
     // react-pdf avoids SSR issues
     useEffect(() => {
@@ -20,13 +31,11 @@ export default function ReportsPage() {
     }, [])
 
     const handleGenerate = async () => {
+        if (!activeHomeId) return;
         setIsLoading(true)
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/reports/${MOCK_HOME_ID}/${month}/data`)
-            if (res.ok) {
-                const data = await res.json()
-                setReportData(data)
-            }
+            const data = await fetchApi(`/reports/${activeHomeId}/${month}/data`)
+            setReportData(data)
         } catch (e) {
             console.error(e)
         } finally {
@@ -35,6 +44,27 @@ export default function ReportsPage() {
     }
 
     if (!isClient) return null;
+
+    if (!activeHomeId) {
+        return (
+            <div className="flex h-[80vh] items-center justify-center">
+                <div className="text-center space-y-4">
+                    <h2 className="text-2xl font-bold text-slate-200">No Home Selected</h2>
+                    <p className="text-slate-400">Please set up a home to access the report generator.</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (dashboard && !dashboard.has_appliances) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20">
+                <FileText className="w-16 h-16 text-slate-700 mb-4" />
+                <h2 className="text-2xl font-bold text-slate-200">Add Appliances First</h2>
+                <p className="text-slate-400 mt-2">Generate PDF physics-based reports once your home profile is complete.</p>
+            </div>
+        )
+    }
 
     return (
         <div className="w-full flex flex-col lg:flex-row gap-6 h-[calc(100vh-140px)] drop-shadow-sm font-sans">

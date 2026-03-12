@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FileWarning, RefreshCw, X } from "lucide-react";
+import { fetchApi } from "@/lib/api";
 
 export function DemoBanner() {
     const [isVisible, setIsVisible] = useState(true);
@@ -20,7 +21,7 @@ export function DemoBanner() {
     const handleReset = async () => {
         setIsResetting(true);
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/demo/reset`, { method: 'POST' });
+            await fetchApi(`/demo/reset`, { method: 'POST' });
             window.location.reload();
         } catch (e) {
             console.error("Failed to reset:", e);

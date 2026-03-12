@@ -33,9 +33,9 @@ import { Providers } from '@/components/providers'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang="en" className="dark" suppressHydrationWarning>
             <body className={inter.className} suppressHydrationWarning>
-                <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+                <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
                     <Providers>
                         {children}
                         <Toaster richColors position="top-right" />

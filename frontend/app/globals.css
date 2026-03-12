@@ -118,7 +118,23 @@
     @apply border-border;
   }
 
+  html {
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (min-width: 768px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
+  }
+
+
+  table {
+    @apply block w-full overflow-x-auto whitespace-nowrap md:table md:whitespace-normal;
   }
 }
