@@ -44,9 +44,14 @@ app = FastAPI(
 @app.get("/debug-env")
 async def debug_env():
     import os
+    db = os.getenv("DATABASE_URL", "NOT SET")
+    try:
+        host = db.split("@")[1].split(":")[0]
+    except:
+        host = "parse error"
     return {
-        "DATABASE_URL": os.getenv("DATABASE_URL", "NOT SET")[:50],
-        "SUPABASE_URL": os.getenv("SUPABASE_URL", "NOT SET")[:30],
+        "host": host,
+        "db_length": len(db),
     }
 
 # CORS must be last middleware added (runs first due to LIFO order)
