@@ -170,27 +170,13 @@ async def add_request_id_and_log(request: Request, call_next):
     response.headers["X-Request-ID"] = request_id
     return response
 
-# Explicit OPTIONS handler to fix Railway proxy dropping CORS preflight headers
-@app.options("/{rest_of_path:path}")
-async def preflight_handler(rest_of_path: str, request: Request):
-    origin = request.headers.get("Origin", "")
-    allowed = origin if origin in settings.cors_origins else (settings.cors_origins[0] if settings.cors_origins else "*")
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": allowed,
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
-            "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Request-ID",
-            "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Max-Age": "3600",
-        }
-    )
+
 
 # CORS added LAST so it executes FIRST (FastAPI middleware is LIFO)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
