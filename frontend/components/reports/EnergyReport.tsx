@@ -3,17 +3,17 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
     page: { padding: 40, fontFamily: 'Helvetica', backgroundColor: '#ffffff' },
-    header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, borderBottom: '2px solid #1A73E8', paddingBottom: 10 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20, borderBottomWidth: 2, borderBottomStyle: 'solid', borderBottomColor: '#1A73E8', paddingBottom: 10 },
     headerTitle: { fontSize: 24, color: '#1A73E8', fontWeight: 'bold' },
     headerSub: { fontSize: 10, color: '#666' },
     footer: { position: 'absolute', bottom: 30, left: 40, right: 40, fontSize: 10, color: '#999', textAlign: 'center', borderTop: '1px solid #eee', paddingTop: 10 },
     title: { fontSize: 28, fontWeight: 'bold', marginBottom: 10, color: '#333' },
     subtitle: { fontSize: 14, color: '#666', marginBottom: 20 },
-    sectionTitle: { fontSize: 18, color: '#1A73E8', marginTop: 20, marginBottom: 10, borderBottom: '1px solid #eee', paddingBottom: 5 },
+    sectionTitle: { fontSize: 18, color: '#1A73E8', marginTop: 20, marginBottom: 10, borderBottomWidth: 1, borderBottomStyle: 'solid', borderBottomColor: '#eee', paddingBottom: 5 },
 
     // Grid/Cards
     grid2x2: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 10 },
-    card: { width: '48%', backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8, marginBottom: 15, border: '1px solid #eee' },
+    card: { width: '48%', backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8, marginBottom: 15, borderWidth: 1, borderStyle: 'solid', borderColor: '#eee' },
     cardTitle: { fontSize: 12, color: '#666', marginBottom: 5 },
     cardValue: { fontSize: 20, fontWeight: 'bold', color: '#1A73E8' },
 
@@ -255,7 +255,7 @@ export const EnergyReport = ({ data }: { data: any }) => {
 
                 <View style={{ marginTop: 20 }}>
                     {ai_insights.top_recommendations.map((rec: any, i: number) => (
-                        <View key={i} style={{ marginBottom: 20, padding: 15, border: '1px solid #eee', borderRadius: 8 }}>
+                        <View key={i} style={{ marginBottom: 20, padding: 15, borderWidth: 1, borderStyle: 'solid', borderColor: '#eee', borderRadius: 8 }}>
                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1A73E8', marginBottom: 5 }}>
                                 {i + 1}. {rec.action}
                             </Text>
@@ -294,7 +294,7 @@ export const EnergyReport = ({ data }: { data: any }) => {
                 <Text style={styles.title}>Sustainability Scorecard</Text>
 
                 <View style={{ alignItems: 'center', marginVertical: 40 }}>
-                    <View style={{ width: 150, height: 150, borderRadius: 75, backgroundColor: '#e6f4ea', justifyContent: 'center', alignItems: 'center', border: '5px solid #34a853' }}>
+                    <View style={{ width: 150, height: 150, borderRadius: 75, backgroundColor: '#e6f4ea', justifyContent: 'center', alignItems: 'center', borderWidth: 5, borderStyle: 'solid', borderColor: '#34a853' }}>
                         <Text style={{ fontSize: 48, fontWeight: 'bold', color: '#0d652d' }}>{summary.sustainability_score}</Text>
                         <Text style={{ fontSize: 12, color: '#0d652d' }}>Score</Text>
                     </View>

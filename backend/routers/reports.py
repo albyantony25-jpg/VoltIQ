@@ -80,10 +80,10 @@ async def get_report_data(
         "summary": {
             "total_kwh": total_kwh,
             "total_bill_inr": total_bill,
-            "efficiency_grade": "A" if summary.get("home_score", 0) > 80 else "B" if summary.get("home_score", 0) > 60 else "C",
+            "efficiency_grade": "A" if data.get("home_score", 0) > 80 else "B" if data.get("home_score", 0) > 60 else "C",
             "mom_change_pct": 0, # Placeholder until historical comparison implemented
             "co2_kg": round(total_kwh * 0.82, 1),
-            "sustainability_score": summary.get("home_score", 0)
+            "sustainability_score": data.get("home_score", 0)
         },
         "appliance_breakdown": [
             {
@@ -117,7 +117,8 @@ async def get_report_data(
             "anomalies": [],
             "top_recommendations": [],
             "forecast": f"Total consumption for {month} is projected at {total_kwh} kWh.",
-            "efficiency_score_breakdown": f"Sustainability Score: {summary.get('home_score', 0)}"
+            "efficiency_grade": "A" if data.get("home_score", 0) > 80 else "B" if data.get("home_score", 0) > 60 else "C",
+            "efficiency_score_breakdown": f"Sustainability Score: {data.get('home_score', 0)}"
         },
         "heatmap_data": [],
         "peer_comparison": {
