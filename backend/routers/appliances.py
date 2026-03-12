@@ -7,7 +7,7 @@ from typing import List, Optional
 from core.dependencies import get_db_pool, get_current_user
 from models.appliance import ApplianceResponse, ApplianceCreate, ApplianceUpdate
 
-router = APIRouter(prefix="/appliances", tags=["Appliances"])
+router = APIRouter(prefix="/appliances", tags=["Appliances"], redirect_slashes=False)
 
 # --- Helper to load library ---
 def load_appliance_library():

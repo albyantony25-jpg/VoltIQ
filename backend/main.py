@@ -140,6 +140,24 @@ async def seed_tariffs():
                 t['electricity_duty_pct'], json.dumps(t['slab_config']))
     return {"status": f"seeded {len(tariffs)} tariffs"}
 
+@app.post("/migrate-db")
+async def migrate_database():
+    """Add missing columns to alerts table to match the router schema."""
+    async with db.pool.acquire() as conn:
+        await conn.execute("""
+            ALTER TABLE alerts
+                ADD COLUMN IF NOT EXISTS appliance_id UUID,
+                ADD COLUMN IF NOT EXISTS title TEXT,
+                ADD COLUMN IF NOT EXISTS severity TEXT DEFAULT 'INFO',
+                ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'ANOMALY',
+                ADD COLUMN IF NOT EXISTS triggered_at TIMESTAMPTZ DEFAULT NOW();
+        """)
+        # Backfill triggered_at from created_at for existing rows
+        await conn.execute("""
+            UPDATE alerts SET triggered_at = created_at WHERE triggered_at IS NULL;
+        """)
+        return {"status": "migration complete — alerts table updated"}
+
 # CORS must be last middleware added (runs first due to LIFO order)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
