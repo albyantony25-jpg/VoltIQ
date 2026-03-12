@@ -238,8 +238,7 @@ export default function AppliancesPage() {
         const loadLibrary = async () => {
             try {
                 setLibLoading(true);
-                const res = await fetch('http://localhost:8000/api/v1/appliances/library');
-                const data = await res.json();
+                const data = await fetchApi('/appliances/library');
                 console.log('Library loaded:', data.length, 'items');
                 setLibrary(Array.isArray(data) ? data : []);
             } catch (err) {

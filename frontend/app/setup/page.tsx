@@ -79,8 +79,7 @@ export default function SetupPage() {
     useEffect(() => {
         if (step !== 2 || tariffs.length > 0) return;
         setLoadingTariffs(true);
-        fetch('http://localhost:8000/api/v1/tariffs/')
-            .then(res => res.json())
+        fetchApi('/tariffs/')
             .then(data => setTariffs(Array.isArray(data) ? data : []))
             .catch((err) => {
                 console.error("Tariff fetch error:", err);
@@ -102,12 +101,8 @@ export default function SetupPage() {
             const supabase = createBrowserClient()
             const { data: { session } } = await supabase.auth.getSession()
             
-            const res = await fetch('http://localhost:8000/api/v1/homes/', {
+            const home = await fetchApi('/homes/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.access_token}`
-                },
                 body: JSON.stringify({
                     name: homeName,
                     home_type: homeType,
@@ -118,16 +113,6 @@ export default function SetupPage() {
                     tariff_id: tariffId
                 })
             })
-            
-            if (!res.ok) {
-                const err = await res.text()
-                console.error('Failed:', err)
-                toast.error('Failed to create home: ' + err)
-                setIsSubmitting(false)
-                return
-            }
-            
-            const home = await res.json()
             useEnergyStore.getState().setActiveHome(home)
             window.location.href = '/overview'
             

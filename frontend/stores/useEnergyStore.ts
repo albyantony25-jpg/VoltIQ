@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Home, Appliance, Bill, AIInsight } from '../types';
+import { fetchApi } from '../lib/api';
 
 interface EnergyState {
     activeHome: Home | null;
@@ -43,15 +44,7 @@ export const useEnergyStore = create<EnergyState>((set) => ({
                 return;
             }
             
-            const res = await fetch(
-                'http://localhost:8000/api/v1/homes/', 
-                {
-                    headers: {
-                        'Authorization': `Bearer ${session.access_token}`
-                    }
-                }
-            );
-            const homes = await res.json();
+            const homes = await fetchApi('/homes/');
             
             if (homes && homes.length > 0) {
                 set({ activeHome: homes[0], activeHomeId: homes[0].id });
