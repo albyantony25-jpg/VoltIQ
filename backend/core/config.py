@@ -15,8 +15,8 @@ class Settings(BaseSettings):
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 
     model_config = SettingsConfigDict(
-    env_file=".env" if __import__('os').path.exists(".env") else None,
-    env_file_encoding="utf-8"
+        env_file=None,
+        env_file_encoding="utf-8"
     )
 
 settings = Settings()
