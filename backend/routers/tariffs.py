@@ -5,7 +5,8 @@ from services.billing_engine import load_tariffs
 
 router = APIRouter(prefix="/tariffs", tags=["Tariffs"], redirect_slashes=False)
 
-@router.get("/", response_model=List[Tariff], include_in_schema=True)
+@router.get("/")
+@router.get("")
 async def list_tariffs():
     """List all available tariffs (public)."""
     tariffs = load_tariffs()

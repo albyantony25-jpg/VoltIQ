@@ -12,6 +12,11 @@ from services.billing_engine import (
 
 router = APIRouter(prefix="/billing", tags=["billing"], redirect_slashes=False)
 
+@router.get("/")
+@router.get("")
+async def list_all_tariffs_billing():
+    return load_tariffs()
+
 @router.post("/simulate", response_model=BillResult)
 async def simulate_bill(
     payload: SimulatePayload

@@ -19,6 +19,7 @@ def load_appliance_library():
         return []
 
 @router.get("/library")
+@router.get("/library/")
 async def get_appliance_library(
     category: Optional[str] = Query(None, description="Filter by category (hvac, kitchen, etc.)"),
     type: Optional[str] = Query(None, alias="type", description="Filter by appliance_type"),
@@ -46,7 +47,8 @@ async def get_appliance_library(
     
     return library
 
-@router.get("/", response_model=List[ApplianceResponse], include_in_schema=True)
+@router.get("/", response_model=List[ApplianceResponse])
+@router.get("", response_model=List[ApplianceResponse])
 async def list_appliances(
     home_id: uuid.UUID = Query(...),
     db: asyncpg.Pool = Depends(get_db_pool),
