@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     def cors_origins(self) -> List[str]:
         return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+    env_file=".env" if __import__('os').path.exists(".env") else None,
+    env_file_encoding="utf-8"
+    )
 
 settings = Settings()
