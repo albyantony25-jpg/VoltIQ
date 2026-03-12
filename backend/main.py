@@ -44,15 +44,83 @@ app = FastAPI(
 @app.get("/debug-env")
 async def debug_env():
     import os
-    db = os.getenv("DATABASE_URL", "NOT SET")
+    db_val = os.getenv("DATABASE_URL", "NOT SET")
     try:
-        host = db.split("@")[1].split(":")[0]
+        host = db_val.split("@")[1].split(":")[0]
     except:
         host = "parse error"
     return {
         "host": host,
-        "db_length": len(db),
+        "db_length": len(db_val),
     }
+
+@app.post("/seed-db")
+async def seed_database():
+    async with db.pool.acquire() as conn:
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id UUID PRIMARY KEY,
+                full_name TEXT,
+                plan_tier TEXT DEFAULT 'free',
+                locale TEXT DEFAULT 'en',
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS homes (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID NOT NULL,
+                name TEXT NOT NULL,
+                home_type TEXT,
+                city TEXT,
+                bedrooms INT,
+                occupants INT,
+                area_sqft FLOAT,
+                tariff_id TEXT,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS appliances (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                home_id UUID REFERENCES homes(id) ON DELETE CASCADE,
+                name TEXT NOT NULL,
+                brand TEXT,
+                appliance_type TEXT,
+                category TEXT,
+                rated_watts FLOAT,
+                standby_watts FLOAT DEFAULT 0,
+                efficiency_class TEXT DEFAULT 'A',
+                load_factor FLOAT DEFAULT 0.85,
+                usage_hours_per_day FLOAT DEFAULT 4,
+                age_years INT DEFAULT 0,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS tariffs (
+                id TEXT PRIMARY KEY,
+                state TEXT,
+                provider TEXT,
+                fixed_charge_inr FLOAT DEFAULT 0,
+                fuel_surcharge_pct FLOAT DEFAULT 0,
+                electricity_duty_pct FLOAT DEFAULT 0,
+                slab_config JSONB
+            );
+            CREATE TABLE IF NOT EXISTS alerts (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                home_id UUID REFERENCES homes(id) ON DELETE CASCADE,
+                user_id UUID,
+                type TEXT,
+                message TEXT,
+                is_read BOOLEAN DEFAULT FALSE,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS chat_sessions (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID,
+                home_id UUID,
+                messages JSONB DEFAULT '[]',
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+        """)
+        return {"status": "tables created"}
 
 # CORS must be last middleware added (runs first due to LIFO order)
 app.state.limiter = limiter
