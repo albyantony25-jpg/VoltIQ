@@ -41,6 +41,14 @@ app = FastAPI(
     redirect_slashes=False
 )
 
+@app.get("/debug-env")
+async def debug_env():
+    import os
+    return {
+        "DATABASE_URL": os.getenv("DATABASE_URL", "NOT SET")[:50],
+        "SUPABASE_URL": os.getenv("SUPABASE_URL", "NOT SET")[:30],
+    }
+
 # CORS must be last middleware added (runs first due to LIFO order)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
@@ -72,8 +80,8 @@ async def preflight_handler(rest_of_path: str, request: Request):
 # CORS added LAST so it executes FIRST (FastAPI middleware is LIFO)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
