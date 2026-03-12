@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -52,6 +52,22 @@ async def add_request_id_and_log(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Request-ID"] = request_id
     return response
+
+# Explicit OPTIONS handler to fix Railway proxy dropping CORS preflight headers
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(rest_of_path: str, request: Request):
+    origin = request.headers.get("Origin", "")
+    allowed = origin if origin in settings.cors_origins else (settings.cors_origins[0] if settings.cors_origins else "*")
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": allowed,
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+            "Access-Control-Allow-Headers": "Authorization, Content-Type, X-Request-ID",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Max-Age": "3600",
+        }
+    )
 
 # CORS added LAST so it executes FIRST (FastAPI middleware is LIFO)
 app.add_middleware(
