@@ -4,10 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 import asyncpg
 from core.dependencies import get_db_pool, get_current_user
 from fastapi import Request
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
-limiter = Limiter(key_func=get_remote_address)
 
 router = APIRouter(prefix="/reports", tags=["Reports"], redirect_slashes=False)
 
@@ -30,7 +27,6 @@ async def list_reports(
         ]
 
 @router.get("/{home_id}/{month}/data")
-@limiter.limit("10/month")
 async def get_report_data(
     request: Request,
     home_id: uuid.UUID,
