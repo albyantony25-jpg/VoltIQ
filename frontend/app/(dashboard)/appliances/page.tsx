@@ -5,9 +5,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi } from '@/lib/api';
 import { useEnergyStore } from '@/stores/useEnergyStore';
 import { toast } from 'sonner';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
-    Search, Plus, Check, Trash2, Edit3, X, Zap, ChevronRight, Loader2
+    Search, Plus, Check, Trash2, Edit3, X, Zap, Loader2
 } from 'lucide-react';
 
 /* ─── Constants ─── */
@@ -224,6 +224,7 @@ function MyApplianceCard({ app, tariff, onDelete, onEdit }: any) {
 /* ─── Main Page ─── */
 export default function AppliancesPage() {
     const { activeHomeId, activeHome } = useEnergyStore();
+    const router = useRouter();
     const queryClient = useQueryClient();
 
     const [category, setCategory] = useState('all');
@@ -330,7 +331,7 @@ export default function AppliancesPage() {
     };
 
     return (
-        <div className="space-y-8 pb-24">
+        <div className="space-y-8 pb-16">
             {/* ─── First-time banner ─── */}
             {isFirstTime && (
                 <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-start gap-4">
@@ -433,14 +434,15 @@ export default function AppliancesPage() {
                 )}
             </div>
 
-            {/* ─── Sticky Done button ─── */}
+            {/* ─── Done button ─── */}
             {myAppliances.length > 0 && (
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#080808]/90 backdrop-blur-xl border-t border-[#1a1a1a] z-40">
-                    <div className="max-w-lg mx-auto">
-                        <Link href="/overview" className="flex items-center justify-center gap-2 w-full py-3.5 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition-all text-sm">
-                            Done — View My Dashboard <ChevronRight className="w-4 h-4" />
-                        </Link>
-                    </div>
+                <div className="flex justify-center mt-10 mb-10">
+                    <button
+                        onClick={() => router.push('/overview')}
+                        className="px-10 py-4 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-2xl flex items-center gap-2 transition-all text-base"
+                    >
+                        Done — View My Dashboard <span>→</span>
+                    </button>
                 </div>
             )}
 
