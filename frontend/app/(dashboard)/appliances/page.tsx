@@ -357,6 +357,15 @@ export default function AppliancesPage() {
                                 onEdit={() => { }} />
                         ))}
                     </div>
+                    {/* Done button — right below the user's appliances */}
+                    <div className="flex justify-center mt-6">
+                        <button
+                            onClick={() => router.push('/overview')}
+                            className="px-10 py-3.5 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-2xl flex items-center gap-2 transition-all text-base"
+                        >
+                            Done — View My Dashboard <span>→</span>
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -434,17 +443,6 @@ export default function AppliancesPage() {
                 )}
             </div>
 
-            {/* ─── Done button ─── */}
-            {myAppliances.length > 0 && (
-                <div className="flex justify-center mt-10 mb-10">
-                    <button
-                        onClick={() => router.push('/overview')}
-                        className="px-10 py-4 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-2xl flex items-center gap-2 transition-all text-base"
-                    >
-                        Done — View My Dashboard <span>→</span>
-                    </button>
-                </div>
-            )}
 
             {/* Config panel modal */}
             {configuringApp && (
