@@ -228,6 +228,7 @@ export default function AppliancesPage() {
 
     const [category, setCategory] = useState('all');
     const [search, setSearch] = useState('');
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
     const [configuringApp, setConfiguringApp] = useState<any>(null);
     const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
     const [library, setLibrary] = useState<any[]>([]);
@@ -351,9 +352,7 @@ export default function AppliancesPage() {
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {myAppliances.map((app: any) => (
                             <MyApplianceCard key={app.id} app={app} tariff={tariffData}
-                                onDelete={(id: string) => {
-                                    if (window.confirm('Remove this appliance?')) deleteMutation.mutate(id);
-                                }}
+                                onDelete={(id: string) => setDeleteConfirmId(id)}
                                 onEdit={() => { }} />
                         ))}
                     </div>
@@ -453,6 +452,33 @@ export default function AppliancesPage() {
                     onClose={() => setConfiguringApp(null)}
                     onAdd={handleConfirmAdd}
                 />
+            )}
+
+            {/* Delete confirmation modal */}
+            {deleteConfirmId && (
+                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+                    <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4">
+                        <h3 className="text-white font-semibold text-lg mb-2">Remove Appliance?</h3>
+                        <p className="text-gray-400 text-sm mb-6">This appliance will be removed from your home.</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    deleteMutation.mutate(deleteConfirmId);
+                                    setDeleteConfirmId(null);
+                                }}
+                                className="flex-1 px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <style>{`.no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }`}</style>
