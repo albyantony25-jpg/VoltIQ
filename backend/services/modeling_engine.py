@@ -348,11 +348,8 @@ class ModelingEngine:
             if home['tariff_id']:
                 tariff = await conn.fetchrow("SELECT * FROM tariffs WHERE id::text = $1", str(home['tariff_id']))
                 if tariff:
-                    fixed_charge = float(tariff['fixed_charge'] or 0)
-                    if tariff['tariff_type'] == 'flat':
-                        rate = float(tariff['flat_rate'] or 7.5)
-                        projected_bill = float(summary.total_monthly_kwh) * rate
-                    elif tariff['tariff_type'] == 'slab' and tariff['slab_config']:
+                    fixed_charge = float(tariff['fixed_charge_inr'] or 0)
+                    if tariff['slab_config']:
                         slabs = json.loads(tariff['slab_config']) if isinstance(tariff['slab_config'], str) else tariff['slab_config']
                         slabs = slabs or []
                         remaining = float(summary.total_monthly_kwh)
