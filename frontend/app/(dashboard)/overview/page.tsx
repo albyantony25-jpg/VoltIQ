@@ -118,30 +118,55 @@ const LivePowerMeter = ({ appliances }: { appliances: any[] }) => {
 
   return (
     <div className="flex flex-col items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-6 w-full lg:w-1/3 min-h-[240px]">
-      <p className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Live Power Draw</p>
+      <div className="flex w-full justify-between items-start mb-2">
+        <p className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Live Power Draw</p>
+        <div className="flex items-center gap-1.5 opacity-90 px-2 py-0.5 rounded border border-white/10 bg-black/20">
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]" style={{ backgroundColor: color, color }}/>
+          <span className="text-[10px] font-bold tracking-wider text-gray-300">LIVE</span>
+        </div>
+      </div>
       
-      <div className="w-full flex-1 flex items-center justify-center mt-2">
+      <div className="w-full flex-1 flex items-center justify-center relative">
         <svg viewBox="0 0 260 180" className="w-full max-w-[260px] overflow-visible">
+          <defs>
+            <filter id="glowArc" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
           {/* Background arc */}
           <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 1 1 ${arcX2} ${arcY2}`}
             fill="none" stroke="#ffffff0a" strokeWidth="18" strokeLinecap="round"/>
           
-          {/* Active arc */}
-          <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 ${pct > 0.5 ? 1 : 0} 1 ${needleX} ${needleY}`}
-            fill="none" stroke={color} strokeWidth="18" strokeLinecap="round" className="transition-all duration-300 ease-in-out"/>
+          {/* Inner ticks for premium speedometer look */}
+          {[0, 0.25, 0.5, 0.75, 1].map(t => {
+            const tickAngle = startAngle + t * 240
+            const x1 = cx + (r - 18) * Math.cos(toRad(tickAngle))
+            const y1 = cy + (r - 18) * Math.sin(toRad(tickAngle))
+            const x2 = cx + (r - 28) * Math.cos(toRad(tickAngle))
+            const y2 = cy + (r - 28) * Math.sin(toRad(tickAngle))
+            const val = (max * t).toFixed(1)
+            const textX = cx + (r - 42) * Math.cos(toRad(tickAngle))
+            const textY = cy + (r - 42) * Math.sin(toRad(tickAngle))
+            return (
+              <g key={t}>
+                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#ffffff20" strokeWidth="2" strokeLinecap="round"/>
+                <text x={textX} y={textY} fill="#6b7280" fontSize="10" textAnchor="middle" dominantBaseline="middle" fontWeight="bold">
+                  {val}
+                </text>
+              </g>
+            )
+          })}
+          
+          {/* Active arc - Note: pct > 0.75 fixes the sweeping bug for angles > 180 */}
+          <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 ${pct > 0.75 ? 1 : 0} 1 ${needleX} ${needleY}`}
+            fill="none" stroke={color} strokeWidth="18" strokeLinecap="round" filter="url(#glowArc)" className="transition-all duration-300 ease-linear"/>
           
           {/* Centered Value text */}
-          <text x={cx} y={cy + 8} textAnchor="middle" fill="white" fontSize="36" fontWeight="900" className="tracking-tighter">
-            {current.toFixed(1)} <tspan fontSize="18" fill="#9ca3af" fontWeight="600" dy="-4">kW</tspan>
+          <text x={cx} y={cy + 18} textAnchor="middle" fill="white" fontSize="42" fontWeight="900" className="tracking-tighter">
+            {current.toFixed(1)} <tspan fontSize="18" fill="#9ca3af" fontWeight="600" dy="-6">kW</tspan>
           </text>
-          
-          {/* Embedded LIVE indicator */}
-          <foreignObject x={cx - 50} y={cy + 25} width="100" height="30">
-            <div className="flex items-center justify-center w-full h-full gap-2 opacity-90">
-              <span className="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]" style={{ backgroundColor: color, color }}/>
-              <span className="text-xs font-bold tracking-wider text-gray-300">LIVE</span>
-            </div>
-          </foreignObject>
         </svg>
       </div>
     </div>
