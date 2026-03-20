@@ -68,9 +68,10 @@ function calcMonthlyCost(watts: number, category: string, hours: number, age: nu
 /* ─── Config Panel ─── */
 function ConfigPanel({
     app, tariff, onClose, onAdd
-}: { app: any; tariff: any; onClose: () => void; onAdd: (hours: number, age: number) => void }) {
+}: { app: any; tariff: any; onClose: () => void; onAdd: (hours: number, age: number, qty: number) => void }) {
     const [hours, setHours] = useState(app.typical_usage_hours || 4);
     const [age, setAge] = useState(0);
+    const [modalQty, setModalQty] = useState(1);
     const { kwh, cost } = calcMonthlyCost(app.rated_watts, app.category, hours, age, tariff);
     const brandColor = BRAND_COLORS[app.brand?.toLowerCase()] || '#F59E0B';
 
@@ -126,24 +127,41 @@ function ConfigPanel({
                     </div>
                 </div>
 
+                {/* Quantity selector */}
+                <div className="flex items-center justify-between mt-4">
+                  <span className="text-gray-400 text-sm">Quantity</span>
+                  <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5">
+                    <button
+                      onClick={() => setModalQty(q => Math.max(1, q - 1))}
+                      className="text-gray-400 hover:text-white text-xl leading-none w-6 h-6 flex items-center justify-center"
+                    >−</button>
+                    <span className="text-white font-semibold w-6 text-center">{modalQty}</span>
+                    <button
+                      onClick={() => setModalQty(q => Math.min(20, q + 1))}
+                      className="text-gray-400 hover:text-white text-xl leading-none w-6 h-6 flex items-center justify-center"
+                    >+</button>
+                  </div>
+                </div>
+
                 {/* Live preview */}
-                <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-4 mb-6">
+                <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-4 mb-6 mt-6">
                     <div className="flex justify-between items-center">
                         <div>
                             <p className="text-xs text-neutral-500">Monthly consumption</p>
-                            <p className="text-lg font-bold text-white">{kwh.toFixed(1)} kWh</p>
+                            <p className="text-lg font-bold text-white">{(kwh * modalQty).toFixed(1)} kWh</p>
                         </div>
                         <div className="text-right">
                             <p className="text-xs text-neutral-500">Estimated cost</p>
-                            <p className="text-lg font-bold text-amber-400">₹{cost.toFixed(0)}/mo</p>
+                            <p className="text-lg font-bold text-amber-400">₹{(cost * modalQty).toLocaleString()}/mo</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex gap-3">
                     <button onClick={onClose} className="flex-1 py-3 border border-[#252525] text-neutral-400 rounded-xl hover:border-[#333] hover:text-white transition-colors text-sm font-medium">Cancel</button>
-                    <button onClick={() => onAdd(hours, age)} className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition-all text-sm">
+                    <button onClick={() => onAdd(hours, age, modalQty)} className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition-all text-sm">
                         ✓ Add to My Home
+
                     </button>
                 </div>
             </div>
@@ -325,9 +343,13 @@ export default function AppliancesPage() {
         onError: () => toast.error('Failed to remove appliance.'),
     });
 
-    const handleConfirmAdd = (hours: number, age: number) => {
+    const handleConfirmAdd = async (hours: number, age: number, qty: number = 1) => {
         if (!configuringApp || !activeHomeId) return;
-        addMutation.mutate({ app: configuringApp, hours, age });
+        
+        // Loop qty times
+        for (let i = 0; i < qty; i++) {
+            await addMutation.mutateAsync({ app: configuringApp, hours, age });
+        }
     };
 
     return (
