@@ -105,37 +105,44 @@ const LivePowerMeter = ({ appliances }: { appliances: any[] }) => {
   const angle = -210 + pct * 240
   const color = pct < 0.5 ? '#22c55e' : pct < 0.75 ? '#f59e0b' : '#ef4444'
 
-  // SVG semicircle arc
-  const r = 90, cx = 130, cy = 130
+  // SVG semicolon arc perfectly adjusted for 260x170 viewBox
+  const r = 105, cx = 130, cy = 115
   const startAngle = -210, endAngle = 30
   const toRad = (d: number) => (d * Math.PI) / 180
   const arcX1 = cx + r * Math.cos(toRad(startAngle))
   const arcY1 = cy + r * Math.sin(toRad(startAngle))
   const arcX2 = cx + r * Math.cos(toRad(endAngle))
   const arcY2 = cy + r * Math.sin(toRad(endAngle))
-  const needleX = cx + (r - 15) * Math.cos(toRad(angle))
-  const needleY = cy + (r - 15) * Math.sin(toRad(angle))
+  const needleX = cx + r * Math.cos(toRad(angle))
+  const needleY = cy + r * Math.sin(toRad(angle))
 
   return (
-    <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-2xl p-6 w-full lg:w-1/3 min-h-[240px]">
-      <p className="text-gray-400 text-xs mb-4 uppercase tracking-widest font-semibold">Live Power Draw</p>
-      <div className="relative w-full max-w-[260px] aspect-[26/18] flex items-center justify-center">
-        <svg viewBox="0 0 260 180" className="w-full h-full overflow-visible">
+    <div className="flex flex-col items-center justify-between bg-white/5 border border-white/10 rounded-2xl p-6 w-full lg:w-1/3 min-h-[240px]">
+      <p className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Live Power Draw</p>
+      
+      <div className="w-full flex-1 flex items-center justify-center mt-2">
+        <svg viewBox="0 0 260 180" className="w-full max-w-[260px] overflow-visible">
           {/* Background arc */}
           <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 1 1 ${arcX2} ${arcY2}`}
-            fill="none" stroke="#ffffff10" strokeWidth="16" strokeLinecap="round"/>
+            fill="none" stroke="#ffffff0a" strokeWidth="18" strokeLinecap="round"/>
+          
           {/* Active arc */}
           <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 ${pct > 0.5 ? 1 : 0} 1 ${needleX} ${needleY}`}
-            fill="none" stroke={color} strokeWidth="16" strokeLinecap="round" className="transition-all duration-300 ease-in-out"/>
-          {/* Value in center */}
-          <text x={cx} y={cy} textAnchor="middle" fill="white" fontSize="28" fontWeight="900" className="tracking-tighter">
-            {current.toFixed(1)} <tspan fontSize="16" fill="#9ca3af" fontWeight="600">kW</tspan>
+            fill="none" stroke={color} strokeWidth="18" strokeLinecap="round" className="transition-all duration-300 ease-in-out"/>
+          
+          {/* Centered Value text */}
+          <text x={cx} y={cy + 8} textAnchor="middle" fill="white" fontSize="36" fontWeight="900" className="tracking-tighter">
+            {current.toFixed(1)} <tspan fontSize="18" fill="#9ca3af" fontWeight="600" dy="-4">kW</tspan>
           </text>
+          
+          {/* Embedded LIVE indicator */}
+          <foreignObject x={cx - 50} y={cy + 25} width="100" height="30">
+            <div className="flex items-center justify-center w-full h-full gap-2 opacity-90">
+              <span className="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]" style={{ backgroundColor: color, color }}/>
+              <span className="text-xs font-bold tracking-wider text-gray-300">LIVE</span>
+            </div>
+          </foreignObject>
         </svg>
-        <div className="absolute bottom-2 flex items-center justify-center w-full gap-2">
-          <span className="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]" style={{ backgroundColor: color, color }}/>
-          <span className="text-xs font-medium tracking-wide text-gray-300">LIVE</span>
-        </div>
       </div>
     </div>
   )
