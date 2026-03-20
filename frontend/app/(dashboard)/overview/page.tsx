@@ -159,9 +159,14 @@ const LivePowerMeter = ({ appliances }: { appliances: any[] }) => {
             )
           })}
           
-          {/* Active arc - Note: pct > 0.75 fixes the sweeping bug for angles > 180 */}
-          <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 ${pct > 0.75 ? 1 : 0} 1 ${needleX} ${needleY}`}
-            fill="none" stroke={color} strokeWidth="18" strokeLinecap="round" filter="url(#glowArc)" className="transition-all duration-300 ease-linear"/>
+          {/* Active arc - Fixed by using fixed path and stroke-dashoffset to avoid CSS transition geometry bugs */}
+          <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 1 1 ${arcX2} ${arcY2}`}
+            fill="none" stroke={color} strokeWidth="18" strokeLinecap="round" filter="url(#glowArc)" 
+            style={{
+              strokeDasharray: 440,
+              strokeDashoffset: 440 * (1 - Math.max(0.01, pct)),
+              transition: 'stroke-dashoffset 800ms cubic-bezier(0.4, 0, 0.2, 1), stroke 500ms ease'
+            }}/>
           
           {/* Centered Value text */}
           <text x={cx} y={cy + 18} textAnchor="middle" fill="white" fontSize="42" fontWeight="900" className="tracking-tighter">
