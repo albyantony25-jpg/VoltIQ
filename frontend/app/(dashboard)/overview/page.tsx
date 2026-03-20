@@ -5,6 +5,8 @@ import { useEnergyStore } from "@/stores/useEnergyStore";
 import { fetchApi } from "@/lib/api";
 import Link from "next/link";
 import { Zap, IndianRupee, Leaf, TrendingUp, Plus, BarChart3, Award } from "lucide-react";
+import { useState, useEffect } from "react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 /* ─── Skeleton ─── */
 function SkeletonCard() {
@@ -85,8 +87,116 @@ function EmptyDashboard() {
     );
 }
 
+/* ─── Live Simulations ─── */
+const LivePowerMeter = ({ appliances }: { appliances: any[] }) => {
+  const baseWatts = appliances.reduce((sum, a) => sum + (a.rated_watts * (a.load_factor || 0.85)), 0) / 1000
+  const [current, setCurrent] = useState(baseWatts)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const noise = (Math.random() - 0.5) * 0.3
+      setCurrent(prev => Math.max(0.1, +(prev + noise).toFixed(2)))
+    }, 1500)
+    return () => clearInterval(interval)
+  }, [])
+
+  const max = Math.max(baseWatts * 2, 5)
+  const pct = Math.min(current / max, 1)
+  const angle = -210 + pct * 240
+  const color = pct < 0.5 ? '#22c55e' : pct < 0.75 ? '#f59e0b' : '#ef4444'
+
+  // SVG semicircle arc
+  const r = 70, cx = 90, cy = 90
+  const startAngle = -210, endAngle = 30
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const arcX1 = cx + r * Math.cos(toRad(startAngle))
+  const arcY1 = cy + r * Math.sin(toRad(startAngle))
+  const arcX2 = cx + r * Math.cos(toRad(endAngle))
+  const arcY2 = cy + r * Math.sin(toRad(endAngle))
+  const needleX = cx + (r - 10) * Math.cos(toRad(angle))
+  const needleY = cy + (r - 10) * Math.sin(toRad(angle))
+
+  return (
+    <div className="flex flex-col items-center bg-white/5 border border-white/10 rounded-2xl p-4 shrink-0">
+      <p className="text-gray-400 text-xs mb-1 uppercase tracking-widest">Live Power Draw</p>
+      <svg width="180" height="110" viewBox="0 0 180 110">
+        {/* Background arc */}
+        <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 1 1 ${arcX2} ${arcY2}`}
+          fill="none" stroke="#ffffff15" strokeWidth="10" strokeLinecap="round"/>
+        {/* Needle */}
+        <line x1={cx} y1={cy} x2={needleX} y2={needleY}
+          stroke={color} strokeWidth="3" strokeLinecap="round"/>
+        <circle cx={cx} cy={cy} r="5" fill={color}/>
+        {/* Value */}
+        <text x={cx} y={cy + 22} textAnchor="middle" fill="white" fontSize="16" fontWeight="bold">
+          {current.toFixed(1)} kW
+        </text>
+        <text x={cx} y={cy + 35} textAnchor="middle" fill="#9ca3af" fontSize="9">
+          CURRENT DRAW
+        </text>
+      </svg>
+      <div className="flex items-center gap-1.5 mt-1">
+        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: color }}/>
+        <span className="text-xs text-gray-400">Live</span>
+      </div>
+    </div>
+  )
+}
+
+const LiveHourlyChart = ({ appliances }: { appliances: any[] }) => {
+  const totalKw = appliances.reduce((sum, a) => sum + (a.rated_watts * (a.load_factor || 0.85)), 0) / 1000
+
+  const generateHourlyData = () => {
+    const now = new Date()
+    const currentHour = now.getHours()
+    const usagePattern = [0.3,0.2,0.2,0.2,0.3,0.5,0.8,1.0,0.9,0.8,0.7,0.8,0.9,0.8,0.7,0.7,0.8,1.0,1.1,1.0,0.9,0.8,0.6,0.4]
+    return Array.from({ length: currentHour + 1 }, (_, i) => ({
+      hour: `${i}:00`,
+      kw: +(totalKw * usagePattern[i] * (0.9 + Math.random() * 0.2)).toFixed(2)
+    }))
+  }
+
+  const [data, setData] = useState(generateHourlyData())
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setData(prev => {
+        const last = prev[prev.length - 1]
+        return [...prev.slice(0, -1), { ...last, kw: +(last.kw + (Math.random() - 0.5) * 0.1).toFixed(2) }]
+      })
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 min-w-0">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-gray-400 text-xs uppercase tracking-widest">Today's Usage</p>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"/>
+          <span className="text-xs text-gray-400">Live</span>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={120}>
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="kwGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="hour" tick={{ fill: '#6b7280', fontSize: 10 }} interval="preserveStartEnd"/>
+          <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} width={30} unit="kW"/>
+          <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #ffffff15', borderRadius: 8 }} labelStyle={{ color: '#9ca3af' }} itemStyle={{ color: '#f59e0b' }}/>
+          <Area type="monotone" dataKey="kw" stroke="#f59e0b" strokeWidth={2} fill="url(#kwGradient)" dot={false} isAnimationActive={false}/>
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )
+}
+
 /* ─── Full dashboard ─── */
-function FullDashboard({ data }: { data: any }) {
+function FullDashboard({ data, appliances }: { data: any, appliances: any[] }) {
     const summary = data.summary || {};
     const byCategoryMap = summary.by_category || {};
     const topConsumers: any[] = summary.top_consumers || [];
@@ -116,6 +226,14 @@ function FullDashboard({ data }: { data: any }) {
                 <KPI icon="🏆" label="Efficiency Score" value={`${homeScore}/100`} color={effColor(homeScore)} />
                 <KPI icon="🌱" label="CO₂ Footprint" value={`${co2Kg.toFixed(1)} kg`} sub="This month" color="text-teal-400" />
             </div>
+
+            {/* LIVE SIMULATION WIDGETS */}
+            {appliances && appliances.length > 0 && (
+              <div className="flex flex-col sm:flex-row gap-4">
+                <LivePowerMeter appliances={appliances} />
+                <LiveHourlyChart appliances={appliances} />
+              </div>
+            )}
 
             {/* Two columns: Category breakdown + Top consumers */}
             <div className="grid lg:grid-cols-2 gap-4">
@@ -202,6 +320,13 @@ export default function OverviewPage() {
         retry: 1,
     });
 
+    const { data: appliances = [] } = useQuery({
+        queryKey: ['my_appliances', activeHomeId],
+        queryFn: () => fetchApi(`/appliances/?home_id=${activeHomeId}`),
+        enabled: !!activeHomeId,
+        staleTime: 2 * 60 * 1000,
+    });
+
     if (!activeHomeId) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
@@ -242,7 +367,7 @@ export default function OverviewPage() {
                 <h1 className="text-2xl font-black text-white">{activeHome?.name || 'My Home'}</h1>
                 <p className="text-neutral-500 text-sm">{activeHome?.city || ''} • Energy Dashboard</p>
             </div>
-            {data.has_appliances === false ? <EmptyDashboard /> : <FullDashboard data={data} />}
+            {data.has_appliances === false ? <EmptyDashboard /> : <FullDashboard data={data} appliances={appliances} />}
         </div>
     );
 }
