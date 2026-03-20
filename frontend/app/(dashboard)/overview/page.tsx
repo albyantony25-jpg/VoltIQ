@@ -106,38 +106,36 @@ const LivePowerMeter = ({ appliances }: { appliances: any[] }) => {
   const color = pct < 0.5 ? '#22c55e' : pct < 0.75 ? '#f59e0b' : '#ef4444'
 
   // SVG semicircle arc
-  const r = 70, cx = 90, cy = 90
+  const r = 90, cx = 130, cy = 130
   const startAngle = -210, endAngle = 30
   const toRad = (d: number) => (d * Math.PI) / 180
   const arcX1 = cx + r * Math.cos(toRad(startAngle))
   const arcY1 = cy + r * Math.sin(toRad(startAngle))
   const arcX2 = cx + r * Math.cos(toRad(endAngle))
   const arcY2 = cy + r * Math.sin(toRad(endAngle))
-  const needleX = cx + (r - 10) * Math.cos(toRad(angle))
-  const needleY = cy + (r - 10) * Math.sin(toRad(angle))
+  const needleX = cx + (r - 15) * Math.cos(toRad(angle))
+  const needleY = cy + (r - 15) * Math.sin(toRad(angle))
 
   return (
-    <div className="flex flex-col items-center bg-white/5 border border-white/10 rounded-2xl p-4 shrink-0">
-      <p className="text-gray-400 text-xs mb-1 uppercase tracking-widest">Live Power Draw</p>
-      <svg width="180" height="110" viewBox="0 0 180 110">
-        {/* Background arc */}
-        <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 1 1 ${arcX2} ${arcY2}`}
-          fill="none" stroke="#ffffff15" strokeWidth="10" strokeLinecap="round"/>
-        {/* Needle */}
-        <line x1={cx} y1={cy} x2={needleX} y2={needleY}
-          stroke={color} strokeWidth="3" strokeLinecap="round"/>
-        <circle cx={cx} cy={cy} r="5" fill={color}/>
-        {/* Value */}
-        <text x={cx} y={cy + 22} textAnchor="middle" fill="white" fontSize="16" fontWeight="bold">
-          {current.toFixed(1)} kW
-        </text>
-        <text x={cx} y={cy + 35} textAnchor="middle" fill="#9ca3af" fontSize="9">
-          CURRENT DRAW
-        </text>
-      </svg>
-      <div className="flex items-center gap-1.5 mt-1">
-        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: color }}/>
-        <span className="text-xs text-gray-400">Live</span>
+    <div className="flex flex-col items-center justify-center bg-white/5 border border-white/10 rounded-2xl p-6 w-full lg:w-1/3 min-h-[240px]">
+      <p className="text-gray-400 text-xs mb-4 uppercase tracking-widest font-semibold">Live Power Draw</p>
+      <div className="relative w-full max-w-[260px] aspect-[26/18] flex items-center justify-center">
+        <svg viewBox="0 0 260 180" className="w-full h-full overflow-visible">
+          {/* Background arc */}
+          <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 1 1 ${arcX2} ${arcY2}`}
+            fill="none" stroke="#ffffff10" strokeWidth="16" strokeLinecap="round"/>
+          {/* Active arc */}
+          <path d={`M ${arcX1} ${arcY1} A ${r} ${r} 0 ${pct > 0.5 ? 1 : 0} 1 ${needleX} ${needleY}`}
+            fill="none" stroke={color} strokeWidth="16" strokeLinecap="round" className="transition-all duration-300 ease-in-out"/>
+          {/* Value in center */}
+          <text x={cx} y={cy} textAnchor="middle" fill="white" fontSize="28" fontWeight="900" className="tracking-tighter">
+            {current.toFixed(1)} <tspan fontSize="16" fill="#9ca3af" fontWeight="600">kW</tspan>
+          </text>
+        </svg>
+        <div className="absolute bottom-2 flex items-center justify-center w-full gap-2">
+          <span className="w-2.5 h-2.5 rounded-full animate-pulse shadow-[0_0_8px_currentColor]" style={{ backgroundColor: color, color }}/>
+          <span className="text-xs font-medium tracking-wide text-gray-300">LIVE</span>
+        </div>
       </div>
     </div>
   )
@@ -169,28 +167,30 @@ const LiveHourlyChart = ({ appliances }: { appliances: any[] }) => {
   }, [])
 
   return (
-    <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-4 min-w-0">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-gray-400 text-xs uppercase tracking-widest">Today's Usage</p>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"/>
-          <span className="text-xs text-gray-400">Live</span>
+    <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-6 min-w-0 min-h-[240px] flex flex-col justify-between">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-gray-400 text-xs uppercase tracking-widest font-semibold">Today's Usage</p>
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_theme(colors.amber.400)]"/>
+          <span className="text-xs font-medium tracking-wide text-gray-300">LIVE</span>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={120}>
-        <AreaChart data={data}>
-          <defs>
-            <linearGradient id="kwGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-            </linearGradient>
-          </defs>
-          <XAxis dataKey="hour" tick={{ fill: '#6b7280', fontSize: 10 }} interval="preserveStartEnd"/>
-          <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} width={30} unit="kW"/>
-          <Tooltip contentStyle={{ background: '#1a1a2e', border: '1px solid #ffffff15', borderRadius: 8 }} labelStyle={{ color: '#9ca3af' }} itemStyle={{ color: '#f59e0b' }}/>
-          <Area type="monotone" dataKey="kw" stroke="#f59e0b" strokeWidth={2} fill="url(#kwGradient)" dot={false} isAnimationActive={false}/>
-        </AreaChart>
-      </ResponsiveContainer>
+      <div className="flex-1 -ml-4 mt-2">
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="kwGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4}/>
+                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <XAxis dataKey="hour" tick={{ fill: '#6b7280', fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd"/>
+            <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} tickLine={false} axisLine={false} width={35} unit="kW"/>
+            <Tooltip contentStyle={{ background: '#111111', border: '1px solid #2a2a2a', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)' }} labelStyle={{ color: '#9ca3af', marginBottom: 4 }} itemStyle={{ color: '#f59e0b', fontWeight: 600 }}/>
+            <Area type="monotone" dataKey="kw" stroke="#f59e0b" strokeWidth={3} fill="url(#kwGradient)" dot={false} isAnimationActive={false}/>
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   )
 }
