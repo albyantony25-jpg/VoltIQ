@@ -25,13 +25,35 @@ async def create_home(
 ):
     """Create a new home profile for the user."""
     async with db.acquire() as conn:
+        # Resolve tariff_id: if it's not a valid UUID, look up by state name or id
+        tariff_uuid = None
+        if home.tariff_id:
+            # Try to parse as UUID first
+            try:
+                tariff_uuid = uuid.UUID(str(home.tariff_id))
+            except (ValueError, AttributeError):
+                # Not a UUID — look up tariff by matching state code or name
+                tariff_row = await conn.fetchrow(
+                    """
+                    SELECT id FROM tariffs 
+                    WHERE state ILIKE $1 
+                       OR name ILIKE $2
+                    LIMIT 1
+                    """,
+                    str(home.tariff_id),
+                    f"%{home.tariff_id}%"
+                )
+                if tariff_row:
+                    tariff_uuid = tariff_row["id"]
+
         row = await conn.fetchrow(
             """
             INSERT INTO homes (user_id, name, bedrooms, occupants, city, home_type, area_sqft, tariff_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8::uuid)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
             """,
-            user_id, home.name, home.bedrooms, home.occupants, home.city, home.home_type, home.area_sqft, home.tariff_id
+            user_id, home.name, home.bedrooms, home.occupants,
+            home.city, home.home_type, home.area_sqft, tariff_uuid
         )
         return dict(row)
 
