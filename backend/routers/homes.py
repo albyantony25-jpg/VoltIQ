@@ -28,7 +28,7 @@ async def create_home(
         row = await conn.fetchrow(
             """
             INSERT INTO homes (user_id, name, bedrooms, occupants, city, home_type, area_sqft, tariff_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8::text)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8::uuid)
             RETURNING *
             """,
             user_id, home.name, home.bedrooms, home.occupants, home.city, home.home_type, home.area_sqft, home.tariff_id
