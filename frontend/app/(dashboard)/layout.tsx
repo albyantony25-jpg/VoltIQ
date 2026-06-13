@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
     Home, FileText, Bell, LayoutDashboard,
     Settings, Activity, BrainCircuit, Monitor,
-    Menu, X, Moon, Sun, ChevronDown, UserIcon
+    Menu, X, Moon, Sun, ChevronDown, UserIcon, LogOut
 } from 'lucide-react';
 import { createBrowserClient } from '@/lib/supabase-browser';
 import { useTheme } from 'next-themes';
@@ -76,6 +76,88 @@ function SidebarItem({ item, isActive }: { item: any, isActive: boolean }) {
                     >
                         {item.tooltip}
                         <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45" />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function SidebarProfile({ user }: { user: any }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
+    const supabase = createBrowserClient();
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (!target.closest('#sidebar-profile')) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen]);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/login');
+    };
+
+    if (!user) return null;
+
+    const initials = user.email ? user.email.substring(0, 2).toUpperCase() : 'U';
+
+    return (
+        <div id="sidebar-profile" className="relative border-t border-[#1a1a1a] p-3 md:p-2 lg:p-4 mt-auto">
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-white/5 transition-colors text-left"
+            >
+                <div className="h-9 w-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                    <span className="text-amber-500 font-bold text-sm">{initials}</span>
+                </div>
+                <div className="flex-1 min-w-0 md:hidden lg:block">
+                    <p className="text-sm font-semibold text-white truncate">{user.user_metadata?.full_name || 'User'}</p>
+                    <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+                </div>
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-[#1e1e1e] rounded-xl shadow-2xl overflow-hidden md:left-full md:bottom-2 md:mb-0 md:ml-2 md:w-56 lg:left-4 lg:right-4 lg:mb-2 lg:ml-0 lg:w-auto z-50 origin-bottom-left"
+                    >
+                        <div className="p-4 border-b border-[#1a1a1a] bg-[#0d0d0d]">
+                            <p className="text-sm font-bold text-white truncate">{user.user_metadata?.full_name || 'User'}</p>
+                            <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+                        </div>
+                        <div className="p-1">
+                            <button 
+                                onClick={() => { setIsOpen(false); router.push('/setup'); }}
+                                className="flex items-center gap-2 w-full p-2.5 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+                            >
+                                <Settings className="w-4 h-4" /> Account Settings
+                            </button>
+                            <button 
+                                onClick={() => { setIsOpen(false); router.push('/setup'); }}
+                                className="flex items-center gap-2 w-full p-2.5 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+                            >
+                                <FileText className="w-4 h-4" /> Switch Tariff Plan
+                            </button>
+                        </div>
+                        <div className="p-1 border-t border-[#1a1a1a]">
+                            <button 
+                                onClick={handleLogout}
+                                className="flex items-center gap-2 w-full p-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-left"
+                            >
+                                <LogOut className="w-4 h-4" /> Logout
+                            </button>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -239,6 +321,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             </div>
                         ))}
                     </nav>
+
+                    {/* Profile Menu */}
+                    <SidebarProfile user={user} />
                 </aside>
 
                 {/* Main Content Area */}
