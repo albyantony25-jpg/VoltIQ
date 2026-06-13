@@ -15,7 +15,7 @@ from core.config import settings
 from core.database import db
 from core.exceptions import EnergyPlatformError, ValidationError, AIServiceError, BillingError
 
-from routers import homes, appliances, simulation, billing, insights, chat, reports, alerts, analytics, demo, tariffs
+from routers import homes, appliances, simulation, billing, insights, chat, reports, alerts, analytics, demo, tariffs, users
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -247,6 +247,7 @@ app.include_router(alerts.router, prefix=api_prefix)
 app.include_router(analytics.router, prefix=api_prefix)
 app.include_router(demo.router, prefix=api_prefix)
 app.include_router(tariffs.router, prefix=api_prefix)
+app.include_router(users.router, prefix=api_prefix)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -3,7 +3,7 @@ import asyncpg
 import uuid
 from typing import List
 from core.dependencies import get_db_pool, get_current_user
-from models.home import HomeResponse, HomeCreate
+from models.home import HomeResponse, HomeCreate, HomeUpdate
 
 router = APIRouter(prefix="/homes", tags=["Homes"], redirect_slashes=False)
 
@@ -16,6 +16,36 @@ async def get_user_homes(
     async with db.acquire() as conn:
         rows = await conn.fetch("SELECT * FROM homes WHERE user_id = $1", user_id)
         return [dict(row) for row in rows]
+
+@router.patch("/{home_id}", response_model=HomeResponse, include_in_schema=True)
+async def update_home(
+    home_id: uuid.UUID,
+    update_data: HomeUpdate,
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
+):
+    """Update home profile details."""
+    async with db.acquire() as conn:
+        # Check ownership
+        home = await conn.fetchrow("SELECT * FROM homes WHERE id = $1 AND user_id = $2", home_id, user_id)
+        if not home:
+            raise HTTPException(status_code=404, detail="Home not found")
+        
+        updates = []
+        values = []
+        for key, value in update_data.model_dump(exclude_unset=True).items():
+            updates.append(f"{key} = ${len(values) + 1}")
+            values.append(value)
+            
+        if not updates:
+            return dict(home)
+            
+        values.append(home_id)
+        values.append(user_id)
+        query = f"UPDATE homes SET {', '.join(updates)} WHERE id = ${len(values)-1} AND user_id = ${len(values)} RETURNING *"
+        
+        row = await conn.fetchrow(query, *values)
+        return dict(row)
 
 @router.post("/", response_model=HomeResponse, include_in_schema=True)
 async def create_home(

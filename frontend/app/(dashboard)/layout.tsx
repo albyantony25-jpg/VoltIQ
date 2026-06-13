@@ -138,7 +138,7 @@ function SidebarProfile({ user }: { user: any }) {
                         </div>
                         <div className="p-1">
                             <button 
-                                onClick={() => { setIsOpen(false); router.push('/setup'); }}
+                                onClick={() => { setIsOpen(false); router.push('/settings'); }}
                                 className="flex items-center gap-2 w-full p-2.5 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
                             >
                                 <Settings className="w-4 h-4" /> Account Settings
@@ -271,6 +271,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         { name: 'Reports', href: '/reports', icon: FileText, group: 'Advanced' },
         { name: 'Efficiency Score', href: '/score', icon: Activity, group: 'Advanced', badge: 'NEW', tooltip: "Personalized grade based on appliance efficiency + usage behavior" },
         { name: 'Digital Twin', href: '/digital-twin', icon: Monitor, group: 'Advanced', badge: 'BETA' },
+        { name: 'Settings', href: '/settings', icon: Settings, group: 'Advanced' },
     ];
 
     return (
