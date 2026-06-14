@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request,
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import asyncpg
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 import logging
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -30,17 +30,13 @@ class SessionResponse(BaseModel):
     updated_at: str
 
 # ---------------------------------------------------------------------------
-# OpenAI client override for GPT-4o
+# Groq client override for Llama 3
 # ---------------------------------------------------------------------------
-def _get_client() -> AsyncOpenAI:
+def _get_client() -> AsyncGroq:
     import os
-    # If the user's real openai key fails, point it to the local proxy/ollama
-    # that mimics OpenAI spec if available. We will just use the standard one but let's try 
-    # a mock url or just bypass key check by using litellm if they had it.
-    # Actually, we will just continue using standard and tell the user.
-    return AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+    return AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
 
-MODEL = "gpt-4o"
+MODEL = "llama3-70b-8192"
 
 # ---------------------------------------------------------------------------
 # Functions array for GPT-4o
