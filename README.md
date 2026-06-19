@@ -1,12 +1,12 @@
 # ⚡ VoltIQ — AI-Powered Home Energy Intelligence Platform
 
-> A full-stack, hardware-free web application for monitoring, analyzing, and optimizing household energy consumption in India.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-amber?style=for-the-badge)](https://volt-iq-peach.vercel.app)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
+[![Groq](https://img.shields.io/badge/Groq-Llama3-orange?style=for-the-badge)](https://groq.com)
 
-![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
-![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.13-009688?style=flat-square&logo=fastapi)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Railway-336791?style=flat-square&logo=postgresql)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?style=flat-square&logo=openai)
-![Vercel](https://img.shields.io/badge/Deployed-Vercel-black?style=flat-square&logo=vercel)
+> A full-stack, hardware-free web application for monitoring, analyzing, and optimizing household energy consumption in India.
 
 ## 🌐 Live Demo
 
@@ -16,13 +16,27 @@
 | Backend API | https://voltiq-production.up.railway.app |
 | API Docs | https://voltiq-production.up.railway.app/docs |
 
+## 🚀 Quick Demo
+| | |
+|---|---|
+| **Live URL** | https://volt-iq-peach.vercel.app |
+| **Demo Login** | demo@energyiq.app |
+| **Demo Password** | Demo@1234 |
+
+> No signup needed — click login, use demo credentials, explore instantly.
+
+## 📸 Screenshots
+<!-- Dashboard -->
+![Dashboard Overview](dashboard.png)
+*Real-time energy dashboard with live power draw, efficiency score, and bill estimate*
+
 ---
 
 ## 📌 What is VoltIQ?
 
 VoltIQ lets Indian households monitor their electricity consumption and bills **without any hardware**. Users add their home appliances from a library of 100+ devices, and VoltIQ instantly calculates energy usage and projects the monthly electricity bill using real state-specific tariff data from 31 Indian states.
 
-The platform is powered by **OpenAI GPT-4o** for AI insights and a conversational **Volt Assistant** chatbot, allowing users to ask natural language questions about their energy usage.
+The platform is powered by **Groq API (Llama 3 70B)** for AI insights and a conversational **Volt Assistant** chatbot, allowing users to ask natural language questions about their energy usage.
 
 ---
 
@@ -32,7 +46,7 @@ The platform is powered by **OpenAI GPT-4o** for AI insights and a conversationa
 - 🔌 **Appliance Library** — Browse 100+ Indian household appliances across 7 categories with real wattage data
 - 📊 **Real-Time Dashboard** — View total kWh, projected bill, live power meter gauge, and hourly usage chart
 - 🧾 **India Billing Engine** — Slab-based tariff calculation for 31 Indian states including fixed charges, fuel surcharge, and electricity duty
-- 🤖 **AI Insights** — GPT-4o powered personalized energy optimization recommendations
+- 🤖 **AI Insights** — Groq API (Llama 3 70B) powered personalized energy optimization recommendations
 - 💬 **Volt Assistant** — Conversational chatbot for natural language energy queries
 - 📄 **PDF Reports** — Download comprehensive monthly energy reports with appliance-level cost breakdown
 - ⚡ **Efficiency Score** — Home energy efficiency rating with improvement suggestions
@@ -65,11 +79,30 @@ The platform is powered by **OpenAI GPT-4o** for AI insights and a conversationa
 ### Infrastructure
 | Technology | Purpose |
 |---|---|
-| PostgreSQL (Railway) | Primary database |
+| PostgreSQL (Render) | Primary database |
 | Supabase Auth | JWT authentication |
-| OpenAI GPT-4o | AI insights + chatbot |
+| Groq API, Llama 3 70B (free tier) | AI insights + chatbot |
 | Vercel | Frontend deployment |
-| Railway | Backend + DB deployment |
+| Render | Backend + DB deployment |
+
+---
+
+## 🐛 Notable Bugs Debugged
+
+These two bugs are documented as proof of genuine engineering understanding:
+
+**Bug 1 — Rate Limiter Singleton Violation**
+The SlowAPI rate limiter instance was being recreated on every request 
+instead of being shared as a singleton across the app. This caused silent 
+HTTP 500 errors on the PDF report endpoint that were extremely difficult 
+to trace since no explicit error was thrown. Fixed by moving the limiter 
+instantiation to module level.
+
+**Bug 2 — Schema/Query Column Name Mismatch**
+A `KeyError` was thrown at runtime because the column was named 
+`fixed_charge_inr` in the database schema but referenced as `fixed_charge` 
+in both the raw SQL query and the billing calculation engine. Fixed by 
+standardising the column name across all three layers.
 
 ---
 
@@ -106,7 +139,7 @@ monthly_kwh    = daily_kwh * 30
 - Python 3.13
 - PostgreSQL
 - Supabase account
-- OpenAI API key
+- Groq API key
 
 ### Backend Setup
 ```bash
@@ -143,8 +176,8 @@ npm run dev
 DATABASE_URL=postgresql://user:password@host:port/dbname
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-service-key
-OPENAI_API_KEY=sk-proj-...
-OPENAI_MODEL=gpt-4o
+GROQ_API_KEY=gsk_...
+OPENAI_MODEL=llama-3.3-70b-versatile
 JWT_SECRET=your-jwt-secret
 ALLOWED_ORIGINS=http://localhost:3000
 ```
@@ -203,11 +236,8 @@ VoltIQ includes slab tariff configurations for all 31 Indian states including Ke
 
 ---
 
-
-
 ## 📄 License
 
 This project was developed as a mini project for the APJ Abdul Kalam Technological University, B.Tech Computer Science and Engineering, 2026.
 
 ---
-
