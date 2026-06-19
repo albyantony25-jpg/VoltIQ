@@ -62,10 +62,10 @@ CHAT_TOOLS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "appliance_id": {"type": "string"},
+                    "appliance_name": {"type": "string"},
                     "action": {"type": "string", "description": "e.g., 'reduce usage by 2 hours', 'replace with 5-star', 'unplug'"}
                 },
-                "required": ["appliance_id", "action"]
+                "required": ["appliance_name", "action"]
             }
         }
     },
@@ -116,7 +116,7 @@ async def build_home_context(home_id: uuid.UUID, db: asyncpg.Pool) -> dict:
                 context["profile"] = f"{home['home_type']}, {home['bedrooms']} beds, {home['occupants']} occupants in {home['city'] or 'Unknown'}."
             
             appliances = await conn.fetch("SELECT id, name, category, rated_watts FROM appliances WHERE home_id = $1 AND is_active = true ORDER BY rated_watts DESC LIMIT 5", home_id)
-            context["top_5_appliances"] = ", ".join([f"{a['name']} ({a['category']}, {a['rated_watts']}W, ID:{a['id']})" for a in appliances])
+            context["top_5_appliances"] = ", ".join([f"{a['name']} ({a['category']}, {a['rated_watts']}W)" for a in appliances])
             
             bills = await conn.fetch("SELECT billing_month, units_consumed, total_amount_inr FROM bills WHERE home_id = $1 ORDER BY billing_month DESC LIMIT 3", home_id)
             context["last_3_bills"] = ", ".join([f"{b['billing_month']}: {b['units_consumed']}kwh (₹{b['total_amount_inr']})" for b in bills])
@@ -172,7 +172,7 @@ def execute_tool(name: str, args: dict) -> str:
     if name == "get_appliance_details":
         return f"Appliance {args.get('name')} consumes approx 18% of total household energy on average."
     elif name == "calculate_savings_if":
-        return f"Taking action '{args.get('action')}' on appliance {args.get('appliance_id')} would save roughly ₹850 annually."
+        return f"Taking action '{args.get('action')}' on appliance {args.get('appliance_name')} would save roughly ₹850 annually."
     elif name == "compare_with_peers":
         return f"Your {args.get('metric')} is 12% lower than similar homes in your area."
     elif name == "forecast_remaining_bill":
