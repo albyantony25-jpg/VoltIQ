@@ -36,7 +36,7 @@ def _get_client() -> AsyncGroq:
     import os
     return AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
 
-MODEL = "llama3-70b-8192"
+MODEL = "llama-3.3-70b-versatile"
 
 # ---------------------------------------------------------------------------
 # Functions array for GPT-4o
