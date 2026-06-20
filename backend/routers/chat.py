@@ -251,16 +251,22 @@ async def chat_stream(
                     history = json.loads(row['messages']) if isinstance(row['messages'], str) else row['messages']
             except Exception: pass
     
-    # Keep last 10
+    # Keep last 10, only user/assistant text messages (no tool calls or tool results)
     history = history[-10:]
 
-    # Strip tool calls from history context passing to OpenAI if they got malformed
-    clean_history = [m for m in history if m.get("role") in ["user", "assistant", "tool"]]
+    # Strip ALL tool-related messages from history — only keep clean user/assistant text
+    clean_history = [
+        m for m in history
+        if m.get("role") in ["user", "assistant"]
+        and isinstance(m.get("content"), str)
+        and m.get("content")  # non-empty
+        and not m.get("tool_calls")  # no tool call stubs
+    ]
     
     # 2. Build Context
     ctx = await build_home_context(body.home_id, db)
     
-    system_prompt = f"""You are EnergyIQ, an intelligent energy advisor. You have access to this user's home energy data:
+    system_prompt = f"""You are Volt Assistant, an intelligent energy advisor for VoltIQ. You have access to this user's home energy data:
 
 Home: {ctx['profile']}
 Current month usage: {ctx['current_month_kwh']} kWh so far
@@ -268,9 +274,10 @@ Top consumers: {ctx['top_5_appliances']}
 Last 3 bills: {ctx['last_3_bills']}
 Current tariff: {ctx['tariff']}
 
-Personality: friendly, concise, data-driven. Use INR for all costs.
-Always reference specific appliances and months — never generic advice.
+Personality: friendly, concise, data-driven. Use INR (₹) for all costs.
+Always reference specific appliance names and months — never give generic advice.
 Max 3 sentences for simple queries. Use markdown tables for comparisons.
+NEVER output JSON, function call syntax, or raw object data — only natural language.
 End every response with exactly 1 actionable next step."""
 
     # 3. Assemble Messages
@@ -285,79 +292,37 @@ End every response with exactly 1 actionable next step."""
             # Send initial session id so client can attach to it
             yield f'data: {json.dumps({"session_id": str(session_id), "type": "meta"})}\n\n'
 
-            # Try to hit OpenAI APIs
+            # Call Groq WITHOUT tools to avoid raw tool-call JSON leaking into the UI.
+            # The home context is already injected into the system prompt so the model
+            # has everything it needs to answer naturally.
             stream = await client.chat.completions.create(
                 model=MODEL,
                 messages=messages,
-                tools=CHAT_TOOLS,
-                tool_choice="auto",
                 stream=True,
                 temperature=0.7,
-                max_tokens=500
+                max_tokens=600
             )
 
             full_reply = ""
-            tool_call_buffer = None
-            
+
             async for chunk in stream:
                 if await request.is_disconnected():
-                    # Stop if client drops early
                     break
-                
+
                 if not getattr(chunk, "choices", None):
                     continue
-                
+
                 delta = chunk.choices[0].delta
-                
-                # Check for tool_calls chunk
-                if getattr(delta, "tool_calls", None):
-                    tc = delta.tool_calls[0]
-                    if getattr(tc, "function", None) and getattr(tc.function, "name", None):
-                        tc_id = getattr(tc, "id", None) or f"call_{uuid.uuid4().hex[:8]}"
-                        tool_call_buffer = {"name": tc.function.name, "arguments": getattr(tc.function, "arguments", "") or "", "id": tc_id}
-                    elif getattr(tc, "function", None) and getattr(tc.function, "arguments", None) and tool_call_buffer:
-                        tool_call_buffer["arguments"] += tc.function.arguments
-                    continue
-                
-                # Text content emission
+
+                # Text content emission only
                 if getattr(delta, "content", None):
                     full_reply += delta.content
                     yield f'data: {json.dumps({"token": delta.content})}\n\n'
-            
-            # Handle if the GPT stopped to call a tool instead of responding
-            if tool_call_buffer:
-                # Execute tool
-                tool_args = json.loads(tool_call_buffer["arguments"]) if tool_call_buffer["arguments"] else {}
-                tool_res = execute_tool(tool_call_buffer["name"], tool_args)
-                
-                # We do a secondary call to get the final text after tool execution completion.
-                # Since SSE doesn't handle nested streaming back and forth well natively without custom protocol,
-                # we just do a non-streaming resolution right here and stream the full block back to save complexity,
-                # Run the secondary call to get the final text after tool execution completion.
-                # To keep it simple, we do a non-streaming second call for this block
-                tc_id = tool_call_buffer.get("id", "call_1")
-                assistant_msg = {
-                    "role": "assistant", 
-                    "content": None, 
-                    "tool_calls": [{"id": tc_id, "type": "function", "function": {"name": tool_call_buffer["name"], "arguments": tool_call_buffer["arguments"]}}]
-                }
-                tool_msg = {"role": "tool", "tool_call_id": tc_id, "name": tool_call_buffer["name"], "content": tool_res}
-                
-                messages.extend([assistant_msg, tool_msg])
-                new_db_messages.extend([assistant_msg, tool_msg])
-                
-                res2 = await client.chat.completions.create(model=MODEL, messages=messages, stream=False)
-                
-                # In non-streaming mode, we can just grab choices[0]
-                final_text = res2.choices[0].message.content or "Done analyzing."
-                full_reply += final_text
-                
-                # Stream it out as a block
-                yield f'data: {json.dumps({"token": final_text})}\n\n'
 
+            # Save ONLY the final clean text to DB — no tool call stubs
             new_db_messages.append({"role": "assistant", "content": full_reply})
             background_tasks.add_task(save_chat_session, db, session_id, user_id, new_db_messages)
-            
+
             yield "data: [DONE]\n\n"
 
         except Exception as e:
