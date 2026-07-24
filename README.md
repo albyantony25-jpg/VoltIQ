@@ -236,6 +236,13 @@ VoltIQ includes slab tariff configurations for all 31 Indian states including Ke
 
 ---
 
+## 👤 Author
+
+Built by **Alby A Jose** ([@albyantony25-jpg](https://github.com/albyantony25-jpg))
+
+---
+
+
 ## 📄 License
 
 This project was developed as a mini project for the APJ Abdul Kalam Technological University, B.Tech Computer Science and Engineering, 2026.
