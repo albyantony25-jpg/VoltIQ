@@ -27,6 +27,8 @@ async def lifespan(app: FastAPI):
     # Startup
     logging.getLogger(__name__).info("Initializing Database Pool...")
     await db.connect()
+    if db.pool is None:
+        logging.getLogger(__name__).error("CRITICAL: Database pool failed to initialize. Running in degraded mode.")
     yield
     # Shutdown
     logging.getLogger(__name__).info("Closing Database Pool...")
