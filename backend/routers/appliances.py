@@ -7,6 +7,21 @@ from typing import List, Optional
 from core.dependencies import get_db_pool, get_current_user
 from models.appliance import ApplianceResponse, ApplianceCreate, ApplianceUpdate
 
+# Explicit allowlist of columns that callers are permitted to update.
+# Field names are injected directly into SQL as identifiers (not as values),
+# so this must be maintained manually — never derived from model_dump() alone.
+ALLOWED_APPLIANCE_UPDATE_FIELDS: frozenset[str] = frozenset({
+    "name",
+    "brand",
+    "category",
+    "rated_watts",
+    "standby_watts",
+    "efficiency_class",
+    "age_years",
+    "is_active",
+    "usage_hours",
+})
+
 router = APIRouter(prefix="/appliances", tags=["Appliances"], redirect_slashes=False)
 
 # --- Helper to load library ---
@@ -164,6 +179,11 @@ async def update_appliance(
         values = [appliance_id]
         idx = 2
         for key, value in update_data.items():
+            if key not in ALLOWED_APPLIANCE_UPDATE_FIELDS:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Field '{key}' is not updatable.",
+                )
             if key == 'category' and value:
                 value = value.value
             if key == 'efficiency_class' and value:
