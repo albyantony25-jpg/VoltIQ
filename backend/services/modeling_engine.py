@@ -61,6 +61,34 @@ class ModelingEngine:
         return round(daily_kwh, 4)
 
     @staticmethod
+    def calculate_appliance_monthly_kwh(app_dict: dict) -> float:
+        """
+        Helper for routers that deal with raw asyncpg Record dicts.
+        Uses the exact same logic as calculate_daily_kwh but avoids pydantic overhead.
+        Returns monthly kWh.
+        """
+        load_factors = {
+            "hvac": 0.65, "heating": 0.80, "kitchen": 0.90, 
+            "entertainment": 0.70, "lighting": 1.0, 
+            "ev": 0.95, "laundry": 0.85, "other": 0.85
+        }
+        
+        cat = str(app_dict.get("category", "other")).lower()
+        lf = load_factors.get(cat, 0.85)
+        
+        age = app_dict.get("age_years", 0) or 0
+        age_penalty = 1 + (age * 0.02)
+        
+        hours = app_dict.get("usage_hours", app_dict.get("usage_hours_per_day", 4)) or 4
+        rated = app_dict.get("rated_watts", 0)
+        standby = app_dict.get("standby_watts", 0)
+        
+        active_kwh = (rated * lf * hours * age_penalty) / 1000.0
+        standby_kwh = (standby * 24.0) / 1000.0
+        
+        return (active_kwh + standby_kwh) * 30.0
+
+    @staticmethod
     def apply_seasonal_modifier(kwh: float, category: str, month: int) -> float:
         """
         Applies seasonal multipliers to energy consumption based on time of year.

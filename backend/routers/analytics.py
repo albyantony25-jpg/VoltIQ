@@ -238,6 +238,7 @@ async def get_overview_dashboard(
         ]
 
     return {
+        "is_demo": True,
         "kpis": kpis,
         "consumption_history": consumption_history,
         "categories": categories,

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 import asyncpg
 import uuid
-from typing import List
+from typing import List, Optional
 from core.dependencies import get_db_pool, get_current_user
 from models.home import HomeResponse, HomeCreate, HomeUpdate
+from services.modeling_engine import ModelingEngine
 
 # Explicit allowlist of columns that callers are permitted to update.
 # Field names are injected directly into SQL as identifiers (not as values),
@@ -147,27 +148,12 @@ async def get_home_dashboard(
                     "home_score": 0
                 }
             
-            # Calculate per appliance
-            load_factors = {
-                "hvac": 0.65, "kitchen": 0.90,
-                "entertainment": 0.70, "lighting": 1.0,
-                "laundry": 0.85, "ev": 0.90, "other": 0.85
-            }
-            
             total_kwh = 0
             by_category = {}
             top_consumers = []
             
             for a in appliances:
-                lf = load_factors.get(a["category"], 0.85)
-                age = a.get("age_years", 0) or 0
-                age_penalty = 1 + (age * 0.02)
-                hours = a.get("usage_hours_per_day", 
-                              a.get("typical_usage_hours", 4)) or 4
-                
-                daily_kwh = (a["rated_watts"] * lf * 
-                            hours * age_penalty) / 1000
-                monthly_kwh = daily_kwh * 30
+                monthly_kwh = ModelingEngine.calculate_appliance_monthly_kwh(dict(a))
                 total_kwh += monthly_kwh
                 
                 cat = a["category"]
@@ -176,7 +162,7 @@ async def get_home_dashboard(
                 top_consumers.append({
                     "name": a["name"],
                     "brand": a.get("brand", ""),
-                    "monthly_kwh": monthly_kwh,
+                    "monthly_kwh": round(monthly_kwh, 2),
                     "cost_inr": 0,
                     "pct": 0
                 })

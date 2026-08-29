@@ -9,6 +9,7 @@ from models.billing import BillResponse, BillResult, Tariff, SimulatePayload, Bi
 from services.billing_engine import (
     calculate_full_bill, get_tariff_by_id, load_tariffs, predict_month_bill, compute_bill_trend
 )
+from services.modeling_engine import ModelingEngine
 
 router = APIRouter(prefix="/billing", tags=["billing"], redirect_slashes=False)
 
@@ -44,7 +45,11 @@ async def predict_current_month_bill(
             
         # MOCK LOGIC: In a real system you'd calculate kwh_so_far from time-series logs
         days_elapsed = min(30, max(1, datetime.datetime.now().day)) 
-        kwh_so_far = 0.0 # Default to 0 for fresh start
+        
+        # Calculate base kwh_so_far from active appliances
+        appliances = await conn.fetch("SELECT * FROM appliances WHERE home_id = $1 AND is_active = true", home_id)
+        daily_total = sum(ModelingEngine.calculate_appliance_monthly_kwh(dict(a)) / 30.0 for a in appliances)
+        kwh_so_far = daily_total * days_elapsed
         
         t_id = home.get("tariff_id") or "MAH-01"
         try:
@@ -118,27 +123,12 @@ async def get_billing_breakdown(
                 str(home['tariff_id'])
             )
             
-            # Calculate per appliance
-            load_factors = {
-                "hvac": 0.65, "kitchen": 0.90,
-                "entertainment": 0.70, "lighting": 1.0,
-                "laundry": 0.85, "ev": 0.90, "other": 0.85
-            }
-            
             total_kwh = 0
             per_appliance = []
             per_category = {}
             
             for a in appliances:
-                lf = load_factors.get(a["category"], 0.85)
-                age = a.get("age_years", 0) or 0
-                age_penalty = 1 + (age * 0.02)
-                hours = a.get("usage_hours_per_day",
-                              a.get("typical_usage_hours", 4)) or 4
-                monthly_kwh = (
-                    a["rated_watts"] * lf * hours * 
-                    age_penalty * 30
-                ) / 1000
+                monthly_kwh = ModelingEngine.calculate_appliance_monthly_kwh(dict(a))
                 total_kwh += monthly_kwh
                 
                 cat = a["category"]
@@ -298,7 +288,7 @@ async def get_full_bill_breakdown(
         if req_month.replace(day=1) > current_month:
             raise HTTPException(status_code=400, detail="Cannot generate bill for future month")
     except ValueError:
-        pass  # ignore if format does not strictly match YYYY-MM
+        raise HTTPException(status_code=400, detail="Invalid month format, expected YYYY-MM")
         
     async with db.acquire() as conn:
         # Verify ownership

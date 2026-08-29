@@ -1,11 +1,13 @@
 import json
 import os
+import functools
 from typing import List, Dict, Any
 from models.billing import (
     SlabBreakdown, SlabResult, Tariff, BillResult, 
     ApplianceCostAttribution, BillTrend, BillPrediction, BillRecord
 )
 
+@functools.lru_cache(maxsize=1)
 def load_tariffs() -> List[Tariff]:
     # Use absolute path resolution for production reliability
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -86,7 +88,7 @@ def calculate_full_bill(home_id: str, month: str, tariff: Tariff, total_units: f
     
     return BillResult(
         energy_charge=energy_charge,
-        fixed_charge=fixed_charge,
+        fixed_charge_inr=fixed_charge,
         fuel_surcharge=fuel_surcharge,
         electricity_duty=electricity_duty,
         total_bill=total_bill

@@ -30,7 +30,7 @@ class Tariff(BaseModel):
 
 class BillResult(BaseModel):
     energy_charge: SlabBreakdown
-    fixed_charge: float
+    fixed_charge_inr: float
     fuel_surcharge: float
     electricity_duty: float
     total_bill: float

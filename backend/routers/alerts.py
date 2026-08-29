@@ -9,6 +9,7 @@ from core.dependencies import get_db_pool, get_current_user
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"], redirect_slashes=False)
 
+import os
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
@@ -122,8 +123,10 @@ async def run_anomaly_check(
         appliances = await conn.fetch("SELECT id, name, category, rated_watts FROM appliances WHERE home_id = $1 AND is_active = true", home_id)
         
         # 1. Random Anomaly Check (HVAC continuous running)
+        # TODO: Implement real anomaly detection based on time-series analysis
         hvacs = [a for a in appliances if a.get('category') and a['category'].lower() == 'hvac']
-        if hvacs and random.random() > 0.4:  # 60% chance to mock an anomaly for demo
+        is_debug = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes")
+        if hvacs and is_debug and random.random() > 0.4:  # 60% chance to mock an anomaly for demo
             hvac = random.choice(hvacs)
             
             # Check if we already alerted this recently to prevent spam
