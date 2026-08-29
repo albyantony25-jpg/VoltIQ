@@ -2,6 +2,9 @@ import asyncpg
 from core.config import settings
 from typing import Optional
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Database:
     def __init__(self):
@@ -20,7 +23,7 @@ class Database:
                     )
                 return  # Success
             except Exception as e:
-                print(f"Warning: Could not connect to database (attempt {attempt}/{retries}). {e}")
+                logger.error(f"Warning: Could not connect to database (attempt {attempt}/{retries}). {e}")
                 if attempt == retries:
                     self.pool = None
                 else:

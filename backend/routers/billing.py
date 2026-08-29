@@ -14,7 +14,6 @@ from services.modeling_engine import ModelingEngine
 router = APIRouter(prefix="/billing", tags=["billing"], redirect_slashes=False)
 
 @router.get("/")
-@router.get("")
 async def list_all_tariffs_billing():
     return load_tariffs()
 

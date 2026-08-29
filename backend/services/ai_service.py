@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, date
 from typing import Any, Optional
 
 import asyncpg
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
 from pydantic import BaseModel, Field, model_validator
@@ -80,8 +80,8 @@ class InsightBundle(BaseModel):
 # OpenAI client
 # ---------------------------------------------------------------------------
 
-def _get_client() -> AsyncOpenAI:
-    return AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+def _get_client() -> AsyncGroq:
+    return AsyncGroq(api_key=settings.GROQ_API_KEY)
 
 SYSTEM_PROMPT = (
     "You are an expert energy analyst AI. You have access to a household's complete energy "
@@ -90,7 +90,7 @@ SYSTEM_PROMPT = (
     "how you derived it. Never hallucinate figures — only use data provided in context."
 )
 
-MODEL = "gpt-4o"
+MODEL = "llama3-70b-8192"
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=3), reraise=True)
 async def _call_openai_with_retry(**kwargs):

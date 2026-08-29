@@ -3,6 +3,7 @@ import os
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 import asyncpg
 import uuid
+import datetime
 from typing import List, Optional
 from core.dependencies import get_db_pool, get_current_user
 from models.appliance import ApplianceResponse, ApplianceCreate, ApplianceUpdate
@@ -63,7 +64,6 @@ async def get_appliance_library(
     return library
 
 @router.get("/", response_model=List[ApplianceResponse])
-@router.get("", response_model=List[ApplianceResponse])
 async def list_appliances(
     home_id: uuid.UUID = Query(...),
     db: asyncpg.Pool = Depends(get_db_pool),
@@ -257,5 +257,5 @@ async def simulate_appliance(
             "monthly_kwh_estimate": monthly_kwh,
             "standby_kwh_monthly_estimate": (appliance.get("standby_watts", 0) * 24 * 30) / 1000.0,
             "annual_kwh_estimate": monthly_kwh * 12,
-            "simulation_timestamp": "2026-02-25T11:15:00Z"
+            "simulation_timestamp": datetime.datetime.utcnow().isoformat() + "Z"
         }
