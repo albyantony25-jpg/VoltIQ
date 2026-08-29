@@ -18,12 +18,6 @@ async def update_current_user(
 ):
     """Update current user profile."""
     async with db.acquire() as conn:
-        # First ensure the column exists (hotfix if missing)
-        try:
-            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name text;")
-        except Exception as e:
-            pass # Ignore if error
-            
         if update_data.full_name is not None:
             await conn.execute(
                 "UPDATE users SET full_name = $1 WHERE id = $2",
@@ -40,10 +34,6 @@ async def get_current_user_profile(
 ):
     """Get current user profile."""
     async with db.acquire() as conn:
-        try:
-            await conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name text;")
-        except:
-            pass
         row = await conn.fetchrow("SELECT * FROM users WHERE id = $1", user_id)
         if row:
             return dict(row)

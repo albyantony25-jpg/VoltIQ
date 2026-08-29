@@ -161,7 +161,8 @@ async def get_energy_patterns(
 @router.get("/{home_id}/overview")
 async def get_overview_dashboard(
     home_id: uuid.UUID,
-    db: asyncpg.Pool = Depends(get_db_pool)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    user_id: uuid.UUID = Depends(get_current_user)
 ) -> dict[str, Any]:
     """
     Returns aggregated data for the Overview Dashboard KPIs, Charts, and Widgets.

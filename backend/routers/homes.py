@@ -113,6 +113,14 @@ async def get_home_dashboard(
 ):
     try:
         async with db.acquire() as conn:
+            # Verify ownership
+            home = await conn.fetchrow(
+                "SELECT id, tariff_id FROM homes WHERE id = $1 AND user_id = $2",
+                home_id, current_user
+            )
+            if not home:
+                raise HTTPException(status_code=404, detail="Home not found or unauthorized")
+
             # Get appliances for this home
             appliances = await conn.fetch(
                 "SELECT * FROM appliances WHERE home_id = $1 AND is_active = true",

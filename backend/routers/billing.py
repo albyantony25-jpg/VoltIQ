@@ -78,14 +78,15 @@ async def get_home_bills_history(
 @router.get("/{home_id}/breakdown")
 async def get_billing_breakdown(
     home_id: str,
-    current_user = Depends(get_current_user)
+    db: asyncpg.Pool = Depends(get_db_pool),
+    current_user: uuid.UUID = Depends(get_current_user)
 ):
     try:
-        async with db.pool.acquire() as conn:
+        async with db.acquire() as conn:
             # Get home and tariff
             home = await conn.fetchrow(
-                "SELECT * FROM homes WHERE id = $1",
-                home_id
+                "SELECT * FROM homes WHERE id = $1 AND user_id = $2",
+                home_id, current_user
             )
             if not home:
                 raise HTTPException(status_code=404, 

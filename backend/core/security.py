@@ -22,6 +22,13 @@ def _get_auth_client() -> httpx.AsyncClient:
         _auth_client = httpx.AsyncClient(timeout=10.0)
     return _auth_client
 
+async def close_auth_client():
+    """Close the shared HTTP client."""
+    global _auth_client
+    if _auth_client and not _auth_client.is_closed:
+        await _auth_client.aclose()
+        _auth_client = None
+
 
 async def verify_token(
     credentials: HTTPAuthorizationCredentials = Security(security),

@@ -6,13 +6,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from core.config import settings
 from core.database import db
 from core.exceptions import EnergyPlatformError
+from core.rate_limiter import limiter
+from core.security import close_auth_client
 
 from routers import (
     homes, appliances, simulation, billing, insights,
@@ -29,10 +31,7 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logging.getLogger(__name__).info("Closing Database Pool...")
     await db.disconnect()
-
-
-# Single shared rate-limiter singleton — routers import this via core.rate_limiter
-limiter = Limiter(key_func=get_remote_address)
+    await close_auth_client()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)

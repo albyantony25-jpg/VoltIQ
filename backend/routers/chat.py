@@ -8,10 +8,7 @@ from pydantic import BaseModel
 import asyncpg
 from groq import AsyncGroq
 import logging
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
+from core.rate_limiter import limiter
 
 from core.dependencies import get_db_pool, get_current_user
 from core.config import settings
