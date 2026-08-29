@@ -5,6 +5,19 @@ from typing import List
 from core.dependencies import get_db_pool, get_current_user
 from models.home import HomeResponse, HomeCreate, HomeUpdate
 
+# Explicit allowlist of columns that callers are permitted to update.
+# Field names are injected directly into SQL as identifiers (not as values),
+# so this must be maintained manually — never derived from model_dump() alone.
+ALLOWED_HOME_UPDATE_FIELDS: frozenset[str] = frozenset({
+    "name",
+    "bedrooms",
+    "occupants",
+    "city",
+    "home_type",
+    "area_sqft",
+    "tariff_id",
+})
+
 router = APIRouter(prefix="/homes", tags=["Homes"], redirect_slashes=False)
 
 @router.get("/", response_model=List[HomeResponse], include_in_schema=True)
@@ -34,6 +47,11 @@ async def update_home(
         updates = []
         values = []
         for key, value in update_data.model_dump(exclude_unset=True).items():
+            if key not in ALLOWED_HOME_UPDATE_FIELDS:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Field '{key}' is not updatable.",
+                )
             updates.append(f"{key} = ${len(values) + 1}")
             values.append(value)
             

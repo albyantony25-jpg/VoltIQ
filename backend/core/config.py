@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     SUPABASE_URL: str
     SUPABASE_SERVICE_KEY: str
+    # Anon (public) key — used for per-request JWT verification via /auth/v1/user.
+    # Must be set in env. The service key above must NOT be used in auth headers.
+    SUPABASE_ANON_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
     GROQ_API_KEY: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4o"
