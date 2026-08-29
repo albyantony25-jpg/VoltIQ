@@ -23,3 +23,6 @@ Thumbs.db
 *.pyo
 *.pyd
 ```
+
+*.env.backup
+.env.backup
