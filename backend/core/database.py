@@ -3,6 +3,7 @@ from core.config import settings
 from typing import Optional
 import asyncio
 import logging
+import ssl
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +24,17 @@ class Database:
                         query_params = [p for p in query.split("&") if not p.startswith("sslmode=")]
                         dsn = f"{base}?{'&'.join(query_params)}" if query_params else base
                         
+                    # Use a default SSL context which often resolves Render/Supabase TLS issues
+                    ssl_context = ssl.create_default_context()
+                    ssl_context.check_hostname = False
+                    ssl_context.verify_mode = ssl.CERT_NONE
+
                     self.pool = await asyncpg.create_pool(
                         dsn=dsn,
                         min_size=2,
                         max_size=20,
                         command_timeout=30.0,
-                        ssl="require"
+                        ssl=ssl_context
                     )
                 return  # Success
             except Exception as e:
