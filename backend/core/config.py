@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Optional
+from pydantic import Field, field_validator, model_validator
 
 class Settings(BaseSettings):
     DATABASE_URL: str
@@ -12,11 +13,16 @@ class Settings(BaseSettings):
     GROQ_API_KEY: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4o"
     JWT_SECRET: str
-    ALLOWED_ORIGINS: str = "http://localhost:3000"
-    
-    @property
-    def cors_origins(self) -> List[str]:
-        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+    ALLOWED_ORIGINS: str | List[str] = "http://localhost:3000"
+    cors_origins: List[str] = []
+
+    @model_validator(mode="after")
+    def populate_cors_origins(self):
+        if isinstance(self.ALLOWED_ORIGINS, str):
+            self.cors_origins = [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
+        elif isinstance(self.ALLOWED_ORIGINS, list):
+            self.cors_origins = self.ALLOWED_ORIGINS
+        return self
 
     model_config = SettingsConfigDict(
         env_file=None,
