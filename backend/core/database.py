@@ -11,10 +11,11 @@ class Database:
         self.pool: Optional[asyncpg.Pool] = None
 
     async def connect(self):
-        retries = 3
+        sleep_times = [2, 5, 10]
+        retries = len(sleep_times)
         for attempt in range(1, retries + 1):
             try:
-                if not self.pool:
+                if not self.pool or getattr(self.pool, '_closed', True):
                     # asyncpg can conflict if sslmode=require is in the URL and ssl kwarg is passed
                     dsn = settings.DATABASE_URL
                     if "?" in dsn:
@@ -35,7 +36,7 @@ class Database:
                 if attempt == retries:
                     self.pool = None
                 else:
-                    await asyncio.sleep(2)
+                    await asyncio.sleep(sleep_times[attempt - 1])
 
     async def disconnect(self):
         if self.pool:
