@@ -25,6 +25,7 @@ from routers import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    logging.getLogger(__name__).info(f"CORS origins configured: {settings.cors_origins}")
     logging.getLogger(__name__).info("Initializing Database Pool...")
     await db.connect()
     if db.pool is None:
@@ -66,7 +67,7 @@ async def add_request_id(request: Request, call_next):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
