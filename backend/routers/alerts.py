@@ -122,30 +122,40 @@ async def run_anomaly_check(
         # Get appliances
         appliances = await conn.fetch("SELECT id, name, category, rated_watts FROM appliances WHERE home_id = $1 AND is_active = true", home_id)
         
-        # 1. Random Anomaly Check (HVAC continuous running)
-        # TODO: Implement real anomaly detection based on time-series analysis
-        hvacs = [a for a in appliances if a.get('category') and a['category'].lower() == 'hvac']
-        is_debug = os.environ.get("DEBUG", "").lower() in ("1", "true", "yes")
-        if hvacs and is_debug and random.random() > 0.4:  # 60% chance to mock an anomaly for demo
-            hvac = random.choice(hvacs)
+        # 1. Real Anomaly Check (Daily Z-score)
+        daily_usage = await conn.fetch("""
+            SELECT log_date, SUM(computed_kwh) as daily_kwh
+            FROM usage_logs
+            WHERE home_id = $1
+            GROUP BY log_date
+            ORDER BY log_date ASC
+        """, home_id)
+
+        if len(daily_usage) >= 14: # Require at least 2 weeks of history
+            recent_usage = [float(row['daily_kwh']) for row in daily_usage[-30:]]
+            mean_usage = sum(recent_usage) / len(recent_usage)
+            std_dev = (sum((x - mean_usage) ** 2 for x in recent_usage) / len(recent_usage)) ** 0.5 or 1.0
             
-            # Check if we already alerted this recently to prevent spam
-            recent = await conn.fetchval("""
-                SELECT COUNT(*) FROM alerts 
-                WHERE appliance_id = $1 AND category = 'ANOMALY' 
-                AND triggered_at > now() - interval '24 hours'
-            """, hvac['id'])
+            latest_usage = recent_usage[-1]
+            z_score = (latest_usage - mean_usage) / std_dev
             
-            if recent == 0:
-                await create_alert(
-                    conn, home_id,
-                    title="Continuous HVAC Running",
-                    message=f"Your '{hvac['name']}' has been running continuously for 6 hours. Consider turning it off to save energy.",
-                    severity="WARNING",
-                    category="ANOMALY",
-                    appliance_id=hvac['id']
-                )
-                new_alerts += 1
+            if z_score > 2.5: # Outlier threshold
+                recent_alert = await conn.fetchval("""
+                    SELECT COUNT(*) FROM alerts 
+                    WHERE home_id = $1 AND category = 'ANOMALY' 
+                    AND triggered_at > now() - interval '24 hours'
+                """, home_id)
+                
+                if recent_alert == 0:
+                    await create_alert(
+                        conn, home_id,
+                        title="Unusual Energy Spike Detected",
+                        message=f"Your home consumed {latest_usage:.1f} kWh yesterday, which is unusually high compared to your recent average of {mean_usage:.1f} kWh. Check for appliances left running.",
+                        severity="WARNING",
+                        category="ANOMALY",
+                        appliance_id=None
+                    )
+                    new_alerts += 1
 
         # 2. Daily Threshold Breach
         # Mock logic: assume daily threshold is 15 kWh. We'll hit it randomly.
