@@ -12,6 +12,7 @@ from core.rate_limiter import limiter
 
 from core.dependencies import get_db_pool, get_current_user
 from core.config import settings
+from core.embeddings import get_embedding
 
 logger = logging.getLogger(__name__)
 
@@ -263,6 +264,29 @@ async def chat_stream(
     # 2. Build Context
     ctx = await build_home_context(body.home_id, db)
     
+    # RAG Retrieval
+    rag_context = ""
+    if db:
+        try:
+            emb = await get_embedding(body.message)
+            emb_str = f"[{','.join(map(str, emb))}]"
+            async with db.acquire() as conn:
+                # Top 3 similar items, distance < 0.7
+                results = await conn.fetch(
+                    """
+                    SELECT content, 1 - (embedding <=> $1::vector) AS similarity 
+                    FROM embeddings 
+                    WHERE 1 - (embedding <=> $1::vector) > 0.3
+                    ORDER BY embedding <=> $1::vector 
+                    LIMIT 3
+                    """,
+                    emb_str
+                )
+                if results:
+                    rag_context = "\nRelevant Knowledge Base Information:\n" + "\n".join([f"- {r['content']}" for r in results])
+        except Exception as e:
+            logger.error(f"RAG search failed: {e}")
+
     system_prompt = f"""You are Volt Assistant, an intelligent energy advisor for VoltIQ. You have access to this user's home energy data:
 
 Home: {ctx['profile']}
@@ -270,6 +294,7 @@ Current month usage: {ctx['current_month_kwh']} kWh so far
 Top consumers: {ctx['top_5_appliances']}
 Last 3 bills: {ctx['last_3_bills']}
 Current tariff: {ctx['tariff']}
+{rag_context}
 
 Personality: friendly, concise, data-driven. Use INR (₹) for all costs.
 Always reference specific appliance names and months — never give generic advice.

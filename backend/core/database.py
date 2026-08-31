@@ -36,6 +36,23 @@ class Database:
                         command_timeout=30.0,
                         ssl=ssl_context
                     )
+
+                # Initialize extensions and tables
+                if self.pool:
+                    async with self.pool.acquire() as conn:
+                        await conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+                        await conn.execute("""
+                            CREATE TABLE IF NOT EXISTS embeddings (
+                                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                home_id UUID,
+                                appliance_id UUID,
+                                tariff_id TEXT,
+                                content TEXT NOT NULL,
+                                embedding vector(384),
+                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                            )
+                        """)
+
                 return  # Success
             except Exception as e:
                 logger.error(f"Warning: Could not connect to database (attempt {attempt}/{retries}). {e}")
