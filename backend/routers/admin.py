@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request, Depends, status, Header
 import asyncpg
-from core.database import get_db_pool
+from core.dependencies import get_db_pool
 from core.config import settings
 import json
 import os
