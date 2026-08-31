@@ -66,14 +66,14 @@ export function InsightCard({ title, description, impact, savings_inr, reasoning
             transition={{ duration: 0.5, delay, ease: "easeOut" }}
         >
             <Card
-                className={`border-slate-800 bg-slate-900/50 hover:bg-slate-800/80 transition-colors duration-300`}
+                className={`border-border/50 bg-card hover:border-primary/20 transition-all duration-300 shadow-sm`}
             >
                 <CardContent className="p-5">
                     <div className="flex justify-between items-start gap-4">
                         <div className="flex-shrink-0 mt-1">
                             {type === 'recommendation' ? (
-                                <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
-                                    <Zap className="h-5 w-5 text-indigo-400" />
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                                    <Zap className="h-5 w-5 text-primary" />
                                 </div>
                             ) : (
                                 <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
@@ -84,33 +84,33 @@ export function InsightCard({ title, description, impact, savings_inr, reasoning
 
                         <div className="flex-1 min-w-0 pointer-events-auto">
                             <div className="flex items-center justify-between mb-1.5">
-                                <h4 className="text-base font-bold text-slate-200 truncate pr-4">{title}</h4>
-                                <Badge variant="outline" className={`${getImpactColor(impact)} text-[10px] font-extrabold tracking-wider ${impact === 'HIGH' && !prefersReducedMotion ? 'animate-pulse' : ''}`}>
+                                <h4 className="text-base font-medium tracking-tight text-foreground truncate pr-4">{title}</h4>
+                                <Badge variant="outline" className={`${getImpactColor(impact)} text-[10px] font-bold tracking-wider ${impact === 'HIGH' && !prefersReducedMotion ? 'animate-pulse' : ''}`}>
                                     {impact} IMPACT
                                 </Badge>
                             </div>
-                            <p className="text-sm text-slate-400 leading-relaxed mb-3">
+                            <p className="text-sm text-muted-foreground font-light leading-relaxed mb-3">
                                 {description}
                             </p>
 
                             {type === 'recommendation' && savings_inr !== undefined && (
                                 <div className="flex items-center gap-4 mb-4 text-xs">
-                                    <span className="font-semibold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">
+                                    <span className="font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">
                                         Save ~₹{savings_inr.toLocaleString('en-IN')}/yr
                                     </span>
-                                    <div className="flex items-center text-slate-500 font-medium">
+                                    <div className="flex items-center text-muted-foreground font-light">
                                         Effort {getEffortDots(effort)}
                                     </div>
                                 </div>
                             )}
 
                             {expanded && (
-                                <div className="mt-4 p-4 rounded-lg bg-black/40 border border-white/5 animate-in slide-in-from-top-2 fade-in duration-200">
+                                <div className="mt-4 p-4 rounded-lg bg-secondary/50 border border-border/50 animate-in slide-in-from-top-2 fade-in duration-200">
                                     <div className="flex items-start gap-2">
-                                        <HelpCircle className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                                        <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                                         <div>
-                                            <p className="text-xs font-semibold text-slate-300 mb-1 uppercase tracking-wider">AI Reasoning</p>
-                                            <p className="text-sm text-slate-400 leading-relaxed">{reasoning}</p>
+                                            <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">AI Reasoning</p>
+                                            <p className="text-sm text-foreground font-light leading-relaxed">{reasoning}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -119,10 +119,10 @@ export function InsightCard({ title, description, impact, savings_inr, reasoning
                     </div>
 
                     {/* Card Footer Actions */}
-                    <div className="mt-4 pt-4 border-t border-slate-800/50 flex justify-between items-center pl-14">
+                    <div className="mt-4 pt-4 border-t border-border/50 flex justify-between items-center pl-14">
                         <button
                             onClick={() => setExpanded(!expanded)}
-                            className="text-xs font-semibold text-slate-400 hover:text-white flex items-center transition-colors"
+                            className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center transition-colors"
                         >
                             {expanded ? (
                                 <><ChevronUp className="h-4 w-4 mr-1" /> Hide Reasoning</>
@@ -134,7 +134,7 @@ export function InsightCard({ title, description, impact, savings_inr, reasoning
                         {type === 'recommendation' && (
                             <button
                                 onClick={() => setDone(true)}
-                                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-1.5 rounded-md transition-all active:scale-95 shadow-[0_0_15px_rgba(79,70,229,0.3)]"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium px-4 py-1.5 rounded-md transition-all hover:scale-[1.02] shadow-sm"
                             >
                                 Mark as Done
                             </button>

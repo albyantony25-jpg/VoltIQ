@@ -77,22 +77,22 @@ function ConfigPanel({
 
     return (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4 pb-4">
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative w-full max-w-md bg-[#111] border border-[#2a2a2a] rounded-2xl p-6 shadow-2xl">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={onClose} />
+            <div className="relative w-full max-w-md bg-card border border-border/50 rounded-2xl p-6 shadow-2xl">
                 {/* Header */}
                 <div className="flex items-start gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-black shrink-0"
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-medium tracking-tight shrink-0 shadow-sm"
                         style={{ backgroundColor: brandColor }}>
                         {app.brand?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="font-bold text-white text-base">{app.brand}</p>
-                        <p className="text-neutral-500 text-sm truncate">{app.model_name || app.appliance_type}</p>
-                        <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded border mt-1 ${EFFICIENCY_COLORS[app.efficiency_class] || EFFICIENCY_COLORS['A']}`}>
+                        <p className="font-medium tracking-tight text-foreground text-base">{app.brand}</p>
+                        <p className="text-muted-foreground text-sm truncate font-light">{app.model_name || app.appliance_type}</p>
+                        <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded border mt-1 ${EFFICIENCY_COLORS[app.efficiency_class] || EFFICIENCY_COLORS['A']}`}>
                             {app.efficiency_class} • {app.rated_watts}W
                         </span>
                     </div>
-                    <button onClick={onClose} className="text-neutral-500 hover:text-white transition-colors">
+                    <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -100,68 +100,67 @@ function ConfigPanel({
                 {/* Hours slider */}
                 <div className="mb-5">
                     <div className="flex justify-between mb-2">
-                        <label className="text-sm text-neutral-300 font-medium">Hours per day</label>
-                        <span className="text-amber-400 font-bold text-sm">{hours} hrs</span>
+                        <label className="text-sm text-foreground font-medium">Hours per day</label>
+                        <span className="text-primary font-medium text-sm">{hours} hrs</span>
                     </div>
                     <input type="range" min="0.5" max="24" step="0.5" value={hours}
                         onChange={e => setHours(Number(e.target.value))}
-                        className="w-full h-2 bg-[#1a1a1a] rounded-lg appearance-none cursor-pointer accent-amber-500" />
-                    <div className="flex justify-between text-xs text-neutral-600 mt-1"><span>0.5</span><span>24</span></div>
+                        className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary" />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1 font-light"><span>0.5</span><span>24</span></div>
                 </div>
 
                 {/* Age picker */}
                 <div className="mb-6">
                     <div className="flex justify-between mb-2">
-                        <label className="text-sm text-neutral-300 font-medium">Appliance age</label>
-                        <span className="text-amber-400 font-bold text-sm">{age} yrs</span>
+                        <label className="text-sm text-foreground font-medium">Appliance age</label>
+                        <span className="text-primary font-medium text-sm">{age} yrs</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <button type="button" onClick={() => setAge(a => Math.max(0, a - 1))}
-                            className="w-9 h-9 rounded-lg bg-[#1a1a1a] border border-[#252525] text-white hover:border-amber-500/40 transition-all flex items-center justify-center font-bold text-lg">−</button>
-                        <div className="flex-1 h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
-                            <div className="h-full bg-amber-500/40 rounded-full transition-all" style={{ width: `${(age / 20) * 100}%` }} />
+                            className="w-9 h-9 rounded-lg bg-secondary border border-border/50 text-foreground hover:border-primary/40 transition-all flex items-center justify-center font-medium text-lg">−</button>
+                        <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div className="h-full bg-primary/40 rounded-full transition-all" style={{ width: `${(age / 20) * 100}%` }} />
                         </div>
                         <button type="button" onClick={() => setAge(a => Math.min(20, a + 1))}
-                            className="w-9 h-9 rounded-lg bg-[#1a1a1a] border border-[#252525] text-white hover:border-amber-500/40 transition-all flex items-center justify-center font-bold text-lg">+</button>
-                        <span className="w-12 text-center text-white font-bold">{age} yrs</span>
+                            className="w-9 h-9 rounded-lg bg-secondary border border-border/50 text-foreground hover:border-primary/40 transition-all flex items-center justify-center font-medium text-lg">+</button>
+                        <span className="w-12 text-center text-foreground font-medium">{age} yrs</span>
                     </div>
                 </div>
 
                 {/* Quantity selector */}
                 <div className="flex items-center justify-between mt-4">
-                  <span className="text-gray-400 text-sm">Quantity</span>
-                  <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5">
+                  <span className="text-muted-foreground font-medium text-sm">Quantity</span>
+                  <div className="flex items-center gap-3 bg-secondary/50 border border-border/50 rounded-xl px-3 py-1.5">
                     <button
                       onClick={() => setModalQty(q => Math.max(1, q - 1))}
-                      className="text-gray-400 hover:text-white text-xl leading-none w-6 h-6 flex items-center justify-center"
+                      className="text-muted-foreground hover:text-foreground text-xl leading-none w-6 h-6 flex items-center justify-center"
                     >−</button>
-                    <span className="text-white font-semibold w-6 text-center">{modalQty}</span>
+                    <span className="text-foreground font-medium w-6 text-center">{modalQty}</span>
                     <button
                       onClick={() => setModalQty(q => Math.min(20, q + 1))}
-                      className="text-gray-400 hover:text-white text-xl leading-none w-6 h-6 flex items-center justify-center"
+                      className="text-muted-foreground hover:text-foreground text-xl leading-none w-6 h-6 flex items-center justify-center"
                     >+</button>
                   </div>
                 </div>
 
                 {/* Live preview */}
-                <div className="bg-[#0a0a0a] border border-[#1e1e1e] rounded-xl p-4 mb-6 mt-6">
+                <div className="bg-secondary/30 border border-border/50 rounded-xl p-4 mb-6 mt-6">
                     <div className="flex justify-between items-center">
                         <div>
-                            <p className="text-xs text-neutral-500">Monthly consumption</p>
-                            <p className="text-lg font-bold text-white">{(kwh * modalQty).toFixed(1)} kWh</p>
+                            <p className="text-xs text-muted-foreground font-light">Monthly consumption</p>
+                            <p className="text-lg font-medium tracking-tight text-foreground">{(kwh * modalQty).toFixed(1)} kWh</p>
                         </div>
                         <div className="text-right">
-                            <p className="text-xs text-neutral-500">Estimated cost</p>
-                            <p className="text-lg font-bold text-amber-400">₹{(cost * modalQty).toLocaleString()}/mo</p>
+                            <p className="text-xs text-muted-foreground font-light">Estimated cost</p>
+                            <p className="text-lg font-medium tracking-tight text-primary">₹{(cost * modalQty).toLocaleString()}/mo</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-3 border border-[#252525] text-neutral-400 rounded-xl hover:border-[#333] hover:text-white transition-colors text-sm font-medium">Cancel</button>
-                    <button onClick={() => onAdd(hours, age, modalQty)} className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-xl transition-all text-sm">
+                    <button onClick={onClose} className="flex-1 py-3 border border-border/50 text-muted-foreground rounded-xl hover:border-border hover:text-foreground transition-colors text-sm font-medium">Cancel</button>
+                    <button onClick={() => onAdd(hours, age, modalQty)} className="flex-1 py-3 bg-primary hover:scale-[1.02] text-primary-foreground font-medium rounded-xl transition-all shadow-sm text-sm">
                         ✓ Add to My Home
-
                     </button>
                 </div>
             </div>
@@ -193,45 +192,45 @@ function MyApplianceCard({ app, tariff, onDelete, onEdit }: any) {
     const brandColor = BRAND_COLORS[app.brand?.toLowerCase()] || '#F59E0B';
 
     return (
-        <div className="bg-[#111] border border-[#1e1e1e] rounded-2xl p-4 hover:border-[#2a2a2a] transition-all">
+        <div className="bg-card border border-border/50 rounded-2xl p-4 hover:border-primary/20 transition-all shadow-sm">
             <div className="flex items-start gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-black shrink-0"
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-medium tracking-tight shrink-0 shadow-sm"
                     style={{ backgroundColor: brandColor }}>
                     {app.brand?.charAt(0) || '?'}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white text-sm truncate">{app.brand} {app.model_name || ''}</p>
-                    <p className="text-neutral-600 text-xs capitalize">{app.category} • {app.rated_watts}W</p>
+                    <p className="font-medium text-foreground text-sm truncate">{app.brand} {app.model_name || ''}</p>
+                    <p className="text-muted-foreground font-light text-xs capitalize">{app.category} • {app.rated_watts}W</p>
                 </div>
                 <div className="flex gap-1">
-                    <button onClick={() => setEditing(e => !e)} className="p-1.5 text-neutral-600 hover:text-amber-400 transition-colors"><Edit3 className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => onDelete(app.id)} className="p-1.5 text-neutral-600 hover:text-red-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setEditing(e => !e)} className="p-1.5 text-muted-foreground hover:text-primary transition-colors"><Edit3 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onDelete(app.id)} className="p-1.5 text-muted-foreground hover:text-destructive transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
             </div>
 
             {editing ? (
                 <div className="mt-2">
                     <div className="flex justify-between mb-1">
-                        <span className="text-xs text-neutral-500">Hours/day</span>
-                        <span className="text-xs text-amber-400 font-bold">{localHours}h</span>
+                        <span className="text-xs text-muted-foreground font-light">Hours/day</span>
+                        <span className="text-xs text-primary font-medium">{localHours}h</span>
                     </div>
                     <input type="range" min="0.5" max="24" step="0.5" value={localHours}
                         onChange={e => setLocalHours(Number(e.target.value))}
-                        className="w-full h-1.5 bg-[#1a1a1a] rounded-full appearance-none cursor-pointer accent-amber-500 mb-2" />
+                        className="w-full h-1.5 bg-secondary rounded-full appearance-none cursor-pointer accent-primary mb-2" />
                     <button onClick={() => editMutation.mutate()} disabled={editMutation.isPending}
-                        className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1">
+                        className="w-full py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-1 shadow-sm">
                         {editMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />} Save
                     </button>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div className="bg-[#0a0a0a] rounded-lg p-2">
-                        <p className="text-xs text-neutral-600">Monthly</p>
-                        <p className="text-sm font-bold text-white">{kwh.toFixed(1)} kWh</p>
+                    <div className="bg-secondary/50 rounded-lg p-2 border border-border/30">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">Monthly</p>
+                        <p className="text-sm font-medium tracking-tight text-foreground">{kwh.toFixed(1)} kWh</p>
                     </div>
-                    <div className="bg-[#0a0a0a] rounded-lg p-2">
-                        <p className="text-xs text-neutral-600">Cost</p>
-                        <p className="text-sm font-bold text-amber-400">₹{cost.toFixed(0)}</p>
+                    <div className="bg-secondary/50 rounded-lg p-2 border border-border/30">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-0.5">Cost</p>
+                        <p className="text-sm font-medium tracking-tight text-primary">₹{cost.toFixed(0)}</p>
                     </div>
                 </div>
             )}
@@ -356,11 +355,11 @@ export default function AppliancesPage() {
         <div className="space-y-8 pb-16">
             {/* ─── First-time banner ─── */}
             {isFirstTime && (
-                <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-start gap-4">
-                    <Zap className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
+                <div className="bg-primary/10 border border-primary/20 rounded-2xl p-5 flex items-start gap-4">
+                    <Zap className="w-6 h-6 text-primary shrink-0 mt-0.5" />
                     <div>
-                        <p className="font-bold text-amber-300">👋 Welcome! Select your appliances below</p>
-                        <p className="text-amber-400/70 text-sm mt-0.5">Add your home appliances to activate your energy dashboard and see your bill prediction.</p>
+                        <p className="font-medium tracking-tight text-primary">👋 Welcome! Select your appliances below</p>
+                        <p className="text-primary/70 text-sm mt-0.5 font-light">Add your home appliances to activate your energy dashboard and see your bill prediction.</p>
                     </div>
                 </div>
             )}
@@ -368,9 +367,9 @@ export default function AppliancesPage() {
             {/* ─── My Appliances (returning users) ─── */}
             {myAppliances.length > 0 && (
                 <div>
-                    <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <h2 className="text-xl font-medium tracking-tight text-foreground mb-4 flex items-center gap-2">
                         <Check className="w-5 h-5 text-emerald-400" /> My Home Appliances
-                        <span className="text-sm font-normal text-neutral-500">({myAppliances.length} devices)</span>
+                        <span className="text-sm font-light text-muted-foreground">({myAppliances.length} devices)</span>
                     </h2>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {myAppliances.map((app: any) => (
@@ -383,7 +382,7 @@ export default function AppliancesPage() {
                     <div className="flex justify-center mt-6">
                         <button
                             onClick={() => router.push('/overview')}
-                            className="px-10 py-3.5 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-2xl flex items-center gap-2 transition-all text-base"
+                            className="px-8 py-3 bg-primary text-primary-foreground font-medium rounded-full flex items-center gap-2 hover:scale-105 transition-all text-sm shadow-sm"
                         >
                             Done — View My Dashboard <span>→</span>
                         </button>
@@ -393,13 +392,13 @@ export default function AppliancesPage() {
 
             {/* ─── Library Section ─── */}
             <div>
-                <h2 className="text-lg font-bold text-white mb-4">Appliance Library</h2>
+                <h2 className="text-xl font-medium tracking-tight text-foreground mb-4">Appliance Library</h2>
 
                 {/* Filter tabs */}
                 <div className="flex overflow-x-auto gap-2 pb-2 mb-4 no-scrollbar">
                     {CAT_TABS.map(c => (
                         <button key={c} onClick={() => setCategory(c)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${category === c ? 'bg-amber-500 text-black' : 'bg-[#111] border border-[#1e1e1e] text-neutral-400 hover:text-white hover:border-[#2a2a2a]'}`}>
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${category === c ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-card border border-border/50 text-muted-foreground hover:text-foreground hover:border-border'}`}>
                             {CAT_LABELS[c]}
                         </button>
                     ))}
@@ -407,21 +406,21 @@ export default function AppliancesPage() {
 
                 {/* Search */}
                 <div className="relative mb-5">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input type="text" value={search} onChange={e => setSearch(e.target.value)}
                         placeholder="Search by brand or appliance type..."
-                        className="w-full bg-[#111] border border-[#1e1e1e] rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-amber-500/40 transition-colors" />
+                        className="w-full bg-card border border-border/50 rounded-xl pl-10 pr-4 py-3 text-sm font-light text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/40 transition-colors shadow-sm" />
                 </div>
 
                 {/* Library grid */}
                 {libLoading ? (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {Array(9).fill(0).map((_, i) => (
-                            <div key={i} className="bg-[#111] border border-[#1e1e1e] rounded-2xl p-4 animate-pulse h-28" />
+                            <div key={i} className="bg-card border border-border/50 rounded-2xl p-4 animate-pulse h-28" />
                         ))}
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="text-center py-16 text-neutral-600">
+                    <div className="text-center py-16 text-muted-foreground font-light">
                         <Search className="w-8 h-8 mx-auto mb-3 opacity-40" />
                         <p>No appliances found. Try a different search.</p>
                     </div>
@@ -432,21 +431,21 @@ export default function AppliancesPage() {
                             const effClass = EFFICIENCY_COLORS[app.efficiency_class] || EFFICIENCY_COLORS['A'];
                             const isAdded = addedIds.has(app.id);
                             return (
-                                <div key={app.id} className={`bg-[#111] border rounded-2xl p-4 transition-all ${isAdded ? 'border-emerald-500/40' : 'border-[#1e1e1e] hover:border-amber-500/20'}`}>
+                                <div key={app.id} className={`bg-card border rounded-2xl p-4 transition-all shadow-sm ${isAdded ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-border/50 hover:border-primary/20'}`}>
                                     <div className="flex items-start gap-3 mb-3">
-                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-black shrink-0"
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-medium tracking-tight shrink-0 shadow-sm"
                                             style={{ backgroundColor: brandColor }}>
                                             {app.brand?.charAt(0) || '?'}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-white text-sm truncate">{app.brand}</p>
-                                            <p className="text-neutral-500 text-xs truncate">{app.model_name}</p>
-                                            <p className="text-neutral-600 text-xs">{app.appliance_type}</p>
+                                            <p className="font-medium tracking-tight text-foreground text-sm truncate">{app.brand}</p>
+                                            <p className="text-muted-foreground text-xs truncate font-light">{app.model_name}</p>
+                                            <p className="text-muted-foreground/80 text-xs font-light">{app.appliance_type}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 mb-3">
-                                        <span className="text-xs font-mono text-neutral-300 bg-[#1a1a1a] px-2 py-0.5 rounded">{app.rated_watts}W</span>
-                                        <span className={`text-xs font-bold px-2 py-0.5 rounded border ${effClass}`}>{app.efficiency_class}</span>
+                                        <span className="text-xs font-mono text-muted-foreground bg-secondary px-2 py-0.5 rounded border border-border/30">{app.rated_watts}W</span>
+                                        <span className={`text-xs font-medium px-2 py-0.5 rounded border ${effClass}`}>{app.efficiency_class}</span>
                                     </div>
                                     {isAdded ? (
                                         <div className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium">
@@ -454,7 +453,7 @@ export default function AppliancesPage() {
                                         </div>
                                     ) : (
                                         <button onClick={() => setConfiguringApp(app)}
-                                            className="w-full py-2 text-sm font-semibold text-amber-400 border border-amber-500/20 rounded-xl hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all flex items-center justify-center gap-1">
+                                            className="w-full py-2 text-sm font-medium text-primary border border-primary/20 rounded-xl hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all flex items-center justify-center gap-1 shadow-sm">
                                             <Plus className="w-3.5 h-3.5" /> Add to Home
                                         </button>
                                     )}
@@ -478,14 +477,14 @@ export default function AppliancesPage() {
 
             {/* Delete confirmation modal */}
             {deleteConfirmId && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-                    <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-6 w-full max-w-sm mx-4">
-                        <h3 className="text-white font-semibold text-lg mb-2">Remove Appliance?</h3>
-                        <p className="text-gray-400 text-sm mb-6">This appliance will be removed from your home.</p>
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+                    <div className="bg-card border border-border/50 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+                        <h3 className="text-foreground font-medium tracking-tight text-lg mb-2">Remove Appliance?</h3>
+                        <p className="text-muted-foreground text-sm font-light mb-6">This appliance will be removed from your home.</p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setDeleteConfirmId(null)}
-                                className="flex-1 px-4 py-2 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5"
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-border/50 text-muted-foreground font-medium text-sm hover:bg-secondary hover:text-foreground transition-colors shadow-sm"
                             >
                                 Cancel
                             </button>
@@ -494,7 +493,7 @@ export default function AppliancesPage() {
                                     deleteMutation.mutate(deleteConfirmId);
                                     setDeleteConfirmId(null);
                                 }}
-                                className="flex-1 px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30"
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-medium text-sm transition-colors shadow-sm"
                             >
                                 Remove
                             </button>

@@ -76,40 +76,41 @@
   }
 
   .dark {
-    /* Pure Black Background (#000000) */
+    /* Pure Black Background */
     --background: 0 0% 0%;
-    /* Off White Text (#F5F5F5) */
-    --foreground: 0 0% 96%;
+    /* Soft Off-White Text */
+    --foreground: 0 0% 98%;
 
-    /* Dark Gray Cards (#121212) */
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 96%;
+    /* Very Dark, Subtle Gray Cards (#1C1C1E-ish) */
+    --card: 240 5% 10%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 240 5% 10%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Primary buttons: Amber Gold (#D4AF37) */
-    --primary: 46 65% 52%;
-    --primary-foreground: 0 0% 0%;
+    /* Primary buttons: Sleek White (Apple-style) */
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
 
-    /* Secondary: Darker Gray */
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 96%;
+    /* Secondary: Muted Gray */
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
 
-    /* Accent: Amber Gold (#D4AF37) */
-    --accent: 46 65% 52%;
-    --accent-foreground: 0 0% 0%;
+    /* Accent: Subtle Slate Gray */
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 100%;
+    /* Destructive: Muted Red */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 12%;
-    --input: 0 0% 12%;
-    /* Ring: Soft Gold (#E6C766) */
-    --ring: 45 72% 65%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    /* Ring: Muted Silver/Gray */
+    --ring: 240 4.9% 83.9%;
   }
 }
 

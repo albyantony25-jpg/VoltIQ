@@ -38,27 +38,27 @@ function SidebarItem({ item, isActive }: { item: any, isActive: boolean }) {
                 href={item.href}
                 data-tour={item.tourId}
                 className={`relative flex items-center md:justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-lg transition-all ${isActive
-                    ? 'text-amber-400 font-semibold'
-                    : 'text-neutral-500 hover:text-white hover:bg-white/5'
+                    ? 'text-foreground font-medium'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                     }`}
             >
                 {isActive && (
                     <motion.div
                         layoutId="active-sidebar-nav"
-                        className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500 rounded-r-full"
+                        className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-r-full"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                     />
                 )}
-                {isActive && <div className="absolute inset-0 bg-amber-500/10 rounded-lg -z-10" />}
+                {isActive && <div className="absolute inset-0 bg-secondary/50 rounded-lg -z-10" />}
                 <item.icon className="h-5 w-5 z-10 box-content flex-shrink-0" />
                 <span className="z-10 md:hidden lg:block text-sm whitespace-nowrap">{item.name}</span>
                 {item.badge && (
-                    <span className={`ml-auto md:hidden lg:inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full z-10 ${item.badge === 'AI' ? 'bg-indigo-500/20 text-indigo-400' :
-                        item.badge === 'NEW' ? 'bg-emerald-500/20 text-emerald-400' :
-                            'bg-amber-500/20 text-amber-500'
+                    <span className={`ml-auto md:hidden lg:inline-flex text-[10px] font-medium px-1.5 py-0.5 rounded-full z-10 ${item.badge === 'AI' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
+                        item.badge === 'NEW' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                            'bg-primary/10 text-primary border border-primary/20'
                         }`}>
                         {item.badge}
                     </span>
@@ -72,10 +72,10 @@ function SidebarItem({ item, isActive }: { item: any, isActive: boolean }) {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0 }}
-                        className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 w-48 bg-slate-800 text-xs text-slate-200 p-2.5 text-center rounded-lg shadow-2xl border border-slate-700 pointer-events-none"
+                        className="absolute left-[calc(100%+8px)] top-1/2 -translate-y-1/2 w-48 bg-secondary text-xs text-foreground p-2.5 text-center rounded-lg shadow-2xl border border-border/50 pointer-events-none"
                     >
                         {item.tooltip}
-                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-800 border-l border-b border-slate-700 rotate-45" />
+                        <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-secondary border-l border-b border-border/50 rotate-45" />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -112,14 +112,14 @@ function SidebarProfile({ user }: { user: any }) {
         <div id="sidebar-profile" className="relative border-t border-[#1a1a1a] p-3 md:p-2 lg:p-4 mt-auto">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-white/5 transition-colors text-left"
+                className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-secondary/50 transition-colors text-left"
             >
-                <div className="h-9 w-9 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
-                    <span className="text-amber-500 font-bold text-sm">{initials}</span>
+                <div className="h-9 w-9 rounded-full bg-secondary border border-border flex items-center justify-center shrink-0">
+                    <span className="text-foreground font-medium text-sm">{initials}</span>
                 </div>
                 <div className="flex-1 min-w-0 md:hidden lg:block">
-                    <p className="text-sm font-semibold text-white truncate">{user.user_metadata?.full_name || 'User'}</p>
-                    <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+                    <p className="text-sm font-medium text-foreground truncate">{user.user_metadata?.full_name || 'User'}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
             </button>
 
@@ -130,30 +130,30 @@ function SidebarProfile({ user }: { user: any }) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute bottom-full left-4 right-4 mb-2 bg-[#111] border border-[#1e1e1e] rounded-xl shadow-2xl overflow-hidden md:left-full md:bottom-2 md:mb-0 md:ml-2 md:w-56 lg:left-4 lg:right-4 lg:mb-2 lg:ml-0 lg:w-auto z-50 origin-bottom-left"
+                        className="absolute bottom-full left-4 right-4 mb-2 bg-card border border-border/50 rounded-xl shadow-2xl overflow-hidden md:left-full md:bottom-2 md:mb-0 md:ml-2 md:w-56 lg:left-4 lg:right-4 lg:mb-2 lg:ml-0 lg:w-auto z-50 origin-bottom-left"
                     >
-                        <div className="p-4 border-b border-[#1a1a1a] bg-[#0d0d0d]">
-                            <p className="text-sm font-bold text-white truncate">{user.user_metadata?.full_name || 'User'}</p>
-                            <p className="text-xs text-neutral-500 truncate">{user.email}</p>
+                        <div className="p-4 border-b border-border/50 bg-secondary/30">
+                            <p className="text-sm font-medium tracking-tight text-foreground truncate">{user.user_metadata?.full_name || 'User'}</p>
+                            <p className="text-xs text-muted-foreground font-light truncate">{user.email}</p>
                         </div>
                         <div className="p-1">
                             <button 
                                 onClick={() => { setIsOpen(false); router.push('/settings'); }}
-                                className="flex items-center gap-2 w-full p-2.5 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+                                className="flex items-center gap-2 w-full p-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors text-left"
                             >
                                 <Settings className="w-4 h-4" /> Account Settings
                             </button>
                             <button 
                                 onClick={() => { setIsOpen(false); router.push('/setup'); }}
-                                className="flex items-center gap-2 w-full p-2.5 text-sm text-neutral-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors text-left"
+                                className="flex items-center gap-2 w-full p-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors text-left"
                             >
                                 <FileText className="w-4 h-4" /> Switch Tariff Plan
                             </button>
                         </div>
-                        <div className="p-1 border-t border-[#1a1a1a]">
+                        <div className="p-1 border-t border-border/50">
                             <button 
                                 onClick={handleLogout}
-                                className="flex items-center gap-2 w-full p-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors text-left"
+                                className="flex items-center gap-2 w-full p-2.5 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors text-left"
                             >
                                 <LogOut className="w-4 h-4" /> Logout
                             </button>
@@ -292,17 +292,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Sidebar */}
                 <aside
-                    className={`fixed inset-y-0 left-0 z-40 bg-[#0d0d0d] border-r border-[#1a1a1a] shadow-2xl transition-all duration-300 ease-in-out flex flex-col
+                    className={`fixed inset-y-0 left-0 z-40 bg-card/90 backdrop-blur-2xl border-r border-border/50 shadow-2xl transition-all duration-300 ease-in-out flex flex-col
                     w-[240px] md:static md:w-[64px] lg:w-[240px]
                     ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                     `}
                 >
-                    <div className="p-4 md:p-3 lg:p-6 border-b border-border flex items-center justify-between md:justify-center lg:justify-between h-[60px] lg:h-[72px]">
+                    <div className="p-4 md:p-3 lg:p-6 border-b border-border/50 flex items-center justify-between md:justify-center lg:justify-between h-[60px] lg:h-[72px]">
                         <div className="flex items-center gap-3">
-                            <div className="h-8 w-8 bg-slate-950 rounded-lg flex items-center justify-center shadow-sm border border-slate-800 shadow-amber-500/10 shrink-0">
-                                <VQLogo className="h-5 w-5" />
+                            <div className="h-8 w-8 bg-foreground rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                                <VQLogo className="h-5 w-5 text-background" />
                             </div>
-                            <h2 className="text-xl font-bold tracking-tight md:hidden lg:block whitespace-nowrap overflow-hidden">VoltIQ</h2>
+                            <h2 className="text-xl font-medium tracking-tight md:hidden lg:block whitespace-nowrap overflow-hidden">VoltIQ</h2>
                         </div>
                         <button className="md:hidden p-1 text-muted-foreground" onClick={() => setIsMobileMenuOpen(false)}>
                             <X className="h-5 w-5" />
@@ -330,11 +330,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* Main Content Area */}
                 <main className="flex-1 flex flex-col min-w-0">
 
-                    {/* TopNav handles the header area, auth dummy props, and notification bell */}
                     <TopNav />
 
                     {/* Page Content */}
-                    <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 bg-muted/10 relative pb-20 md:pb-4">
+                    <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 bg-background relative pb-20 md:pb-4">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={pathname}
@@ -346,7 +345,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             >
                                 <Suspense fallback={
                                     <div className="flex h-full items-center justify-center p-8">
-                                        <div className="animate-spin h-8 w-8 text-indigo-500 rounded-full border-4 border-t-transparent"></div>
+                                        <div className="animate-spin h-8 w-8 text-primary rounded-full border-4 border-t-transparent"></div>
                                     </div>
                                 }>
                                     {children}
