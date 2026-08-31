@@ -324,6 +324,39 @@ End every response with exactly 1 actionable next step."""
             # Send initial session id so client can attach to it
             yield f'data: {json.dumps({"session_id": str(session_id), "type": "meta"})}\n\n'
 
+            # Semantic Caching Check
+            cached_response = None
+            q_emb = None
+            if db:
+                try:
+                    q_emb = await get_embedding(body.message)
+                    q_emb_str = f"[{','.join(map(str, q_emb))}]"
+                    async with db.acquire() as conn:
+                        row = await conn.fetchrow(
+                            """
+                            SELECT response, 1 - (embedding <=> $1::vector) AS similarity 
+                            FROM semantic_cache 
+                            WHERE 1 - (embedding <=> $1::vector) > 0.92
+                            ORDER BY similarity DESC LIMIT 1
+                            """, q_emb_str
+                        )
+                        if row:
+                            cached_response = row["response"]
+                            await conn.execute("INSERT INTO ai_logs (endpoint, model, latency_ms) VALUES ('chat_cache_hit', 'cache', 0)")
+                except Exception as e:
+                    logger.error(f"Cache check failed: {e}")
+
+            if cached_response:
+                # Stream cached response
+                for chunk in cached_response.split(" "):
+                    yield f'data: {json.dumps({"token": chunk + " "})}\n\n'
+                    await asyncio.sleep(0.01)
+                
+                new_db_messages.append({"role": "assistant", "content": cached_response})
+                background_tasks.add_task(save_chat_session, db, session_id, user_id, new_db_messages)
+                yield "data: [DONE]\n\n"
+                return
+
             selected_model = classify_query_complexity(body.message)
 
             stream = await client.chat.completions.create(
@@ -411,8 +444,15 @@ End every response with exactly 1 actionable next step."""
                     await conn.execute(
                         """INSERT INTO ai_logs (endpoint, prompt_version, system_prompt, user_input, raw_response, model, latency_ms)
                            VALUES ($1, 'v1', $2, $3, $4, $5, $6)""",
-                        "chat", system_prompt, body.message, full_reply, selected_model, latency_ms
+                        "chat_cache_miss", system_prompt, body.message, full_reply, selected_model, latency_ms
                     )
+                    # Insert into semantic cache
+                    if q_emb:
+                        q_emb_str = f"[{','.join(map(str, q_emb))}]"
+                        await conn.execute(
+                            "INSERT INTO semantic_cache (query, response, embedding) VALUES ($1, $2, $3::vector)",
+                            body.message, full_reply, q_emb_str
+                        )
 
             yield "data: [DONE]\n\n"
 

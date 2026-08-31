@@ -66,7 +66,15 @@ class Database:
                                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                             )
                         """)
-
+                        await conn.execute("""
+                            CREATE TABLE IF NOT EXISTS semantic_cache (
+                                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                query TEXT NOT NULL,
+                                response TEXT NOT NULL,
+                                embedding vector(384),
+                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                            )
+                        """)
 
                 return  # Success
             except Exception as e:
