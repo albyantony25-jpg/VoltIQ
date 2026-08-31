@@ -76,17 +76,14 @@ async def create_home(
     async with db.acquire() as conn:
         resolved_tariff_id = None
         if home.tariff_id:
-            # Look up tariff by matching ID, state, or provider
+            # Look up tariff by exact ID match
             tariff_row = await conn.fetchrow(
                 """
-                SELECT id FROM tariffs 
-                WHERE id ILIKE $1 
-                   OR state ILIKE $2 
-                   OR provider ILIKE $2
-                LIMIT 1
+                SELECT id, state, provider, fixed_charge_inr, fuel_surcharge_pct, electricity_duty_pct, slab_config 
+                FROM tariffs 
+                WHERE id = $1
                 """,
-                str(home.tariff_id),
-                f"%{home.tariff_id}%"
+                str(home.tariff_id)
             )
             if tariff_row:
                 resolved_tariff_id = tariff_row["id"]
