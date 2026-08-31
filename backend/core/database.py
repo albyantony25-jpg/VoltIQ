@@ -52,6 +52,21 @@ class Database:
                                 created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                             )
                         """)
+                        await conn.execute("""
+                            CREATE TABLE IF NOT EXISTS ai_logs (
+                                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                                endpoint TEXT,
+                                prompt_version TEXT,
+                                system_prompt TEXT,
+                                user_input TEXT,
+                                raw_response TEXT,
+                                parsed_response TEXT,
+                                model TEXT,
+                                latency_ms INTEGER,
+                                created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                            )
+                        """)
+
 
                 return  # Success
             except Exception as e:

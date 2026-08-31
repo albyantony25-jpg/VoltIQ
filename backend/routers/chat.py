@@ -309,6 +309,8 @@ End every response with exactly 1 actionable next step."""
     # 4. Stream Generator
     async def event_generator() -> AsyncGenerator[str, None]:
         client = _get_client()
+        import time
+        start_time = time.time()
         
         try:
             # Send initial session id so client can attach to it
@@ -391,6 +393,16 @@ End every response with exactly 1 actionable next step."""
             # Save ONLY the final clean text to DB — no tool call stubs
             new_db_messages.append({"role": "assistant", "content": full_reply})
             background_tasks.add_task(save_chat_session, db, session_id, user_id, new_db_messages)
+            
+            # Log AI prompt and response
+            latency_ms = int((time.time() - start_time) * 1000)
+            if db:
+                async with db.acquire() as conn:
+                    await conn.execute(
+                        """INSERT INTO ai_logs (endpoint, prompt_version, system_prompt, user_input, raw_response, model, latency_ms)
+                           VALUES ($1, 'v1', $2, $3, $4, $5, $6)""",
+                        "chat", system_prompt, body.message, full_reply, MODEL, latency_ms
+                    )
 
             yield "data: [DONE]\n\n"
 

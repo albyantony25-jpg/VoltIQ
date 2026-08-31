@@ -9,6 +9,7 @@ import json
 import math
 import random
 import uuid
+import time
 from datetime import datetime, timedelta, date
 from typing import Any, Optional
 
@@ -96,10 +97,43 @@ SYSTEM_PROMPT = (
 
 MODEL = "llama3-70b-8192"
 
+from core.database import db
+
+async def _log_to_db(endpoint: str, model: str, messages: list, response: Any, latency_ms: int):
+    if not db.pool: return
+    try:
+        sys_prompt = next((m["content"] for m in messages if m.get("role") == "system"), "")
+        user_prompt = json.dumps([m for m in messages if m.get("role") != "system"], default=str)
+        raw_resp = ""
+        if hasattr(response, "choices") and response.choices:
+            raw_resp = response.choices[0].message.content or str(response.choices[0].message.tool_calls)
+        else:
+            raw_resp = str(response)
+        
+        async with db.pool.acquire() as conn:
+            await conn.execute(
+                """INSERT INTO ai_logs (endpoint, prompt_version, system_prompt, user_input, raw_response, model, latency_ms)
+                   VALUES ($1, 'v1', $2, $3, $4, $5, $6)""",
+                endpoint, sys_prompt, user_prompt, raw_resp, model, latency_ms
+            )
+    except Exception as e:
+        logger.error(f"Failed to log AI call: {e}")
+
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=3), reraise=True)
 async def _call_openai_with_retry(**kwargs):
     client = _get_client()
-    return await client.chat.completions.create(**kwargs)
+    start_time = time.time()
+    response = await client.chat.completions.create(**kwargs)
+    latency_ms = int((time.time() - start_time) * 1000)
+    
+    asyncio.create_task(_log_to_db(
+        endpoint="insights",
+        model=kwargs.get("model", ""),
+        messages=kwargs.get("messages", []),
+        response=response,
+        latency_ms=latency_ms
+    ))
+    return response
 
 
 # ---------------------------------------------------------------------------
