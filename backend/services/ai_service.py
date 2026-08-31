@@ -16,7 +16,8 @@ import asyncpg
 from groq import AsyncGroq
 import logging
 from tenacity import retry, stop_after_attempt, wait_exponential
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, ValidationError
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,9 @@ class Recommendation(BaseModel):
     annual_saving_inr: float
     payback_months: Optional[int] = None
     reasoning: str
+
+class RecommendationList(BaseModel):
+    recommendations: list[Recommendation]
 
 class InsightBundle(BaseModel):
     home_id: str
@@ -326,30 +330,6 @@ async def run_analyst_agent(
 # Agent 2: FORECASTER
 # ---------------------------------------------------------------------------
 
-FORECASTER_SCHEMA = {
-    "type": "json_schema",
-    "json_schema": {
-        "name": "Forecast",
-        "strict": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "next_month_kwh": {"type": "number"},
-                "next_month_bill_inr": {"type": "number"},
-                "confidence": {"type": "number"},
-                "range_low": {"type": "number"},
-                "range_high": {"type": "number"},
-                "key_factors": {"type": "array", "items": {"type": "string"}},
-                "reasoning": {"type": "string"},
-            },
-            "required": [
-                "next_month_kwh", "next_month_bill_inr", "confidence",
-                "range_low", "range_high", "key_factors", "reasoning",
-            ],
-            "additionalProperties": False,
-        },
-    },
-}
 
 
 def _local_forecast(report: AnalystReport) -> Forecast:
@@ -386,13 +366,17 @@ def _local_forecast(report: AnalystReport) -> Forecast:
 
 
 async def run_forecaster_agent(report: AnalystReport) -> Forecast:
-    """Agent 2 – FORECASTER: Structured outputs via GPT-4o, with local fallback."""
+    """Agent 2 – FORECASTER: Structured outputs via LLM, with strict Pydantic validation."""
     try:
         bills_summary = json.dumps(report.bills_history[-6:], default=str)[:3000]
+        schema_json = json.dumps(Forecast.model_json_schema())
         response = await _call_openai_with_retry(
             model=MODEL,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "system", 
+                    "content": f"{SYSTEM_PROMPT}\n\nYou MUST output exactly in this JSON schema:\n{schema_json}"
+                },
                 {
                     "role": "user",
                     "content": (
@@ -404,54 +388,25 @@ async def run_forecaster_agent(report: AnalystReport) -> Forecast:
                     ),
                 },
             ],
-            response_format=FORECASTER_SCHEMA,
+            response_format={"type": "json_object"},
         )
         raw = response.choices[0].message.content
-        data = json.loads(raw)
-        return Forecast(**data)
+        try:
+            return Forecast.model_validate_json(raw)
+        except ValidationError as ve:
+            logger.error(f"Validation failed for Forecaster output:\n{raw}\nError: {ve}")
+            raise HTTPException(status_code=502, detail="AI response validation failed for Forecast")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.warning(f"AI generation failed for Forecaster: {e}")
-        return _local_forecast(report)
+        raise HTTPException(status_code=502, detail="AI generation failed for Forecast")
 
 
 # ---------------------------------------------------------------------------
 # Agent 3: ADVISOR
 # ---------------------------------------------------------------------------
 
-ADVISOR_SCHEMA = {
-    "type": "json_schema",
-    "json_schema": {
-        "name": "RecommendationList",
-        "strict": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "recommendations": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "priority": {"type": "integer"},
-                            "appliance_name": {"type": "string"},
-                            "action": {"type": "string"},
-                            "effort": {"type": "string"},
-                            "annual_saving_inr": {"type": "number"},
-                            "payback_months": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
-                            "reasoning": {"type": "string"},
-                        },
-                        "required": [
-                            "priority", "appliance_name", "action",
-                            "effort", "annual_saving_inr", "payback_months", "reasoning",
-                        ],
-                        "additionalProperties": False,
-                    },
-                }
-            },
-            "required": ["recommendations"],
-            "additionalProperties": False,
-        },
-    },
-}
 
 
 def _local_advisor(report: AnalystReport) -> list[Recommendation]:
@@ -509,13 +464,17 @@ def _local_advisor(report: AnalystReport) -> list[Recommendation]:
 
 
 async def run_advisor_agent(report: AnalystReport) -> list[Recommendation]:
-    """Agent 3 – ADVISOR: Structured GPT output with local fallback."""
+    """Agent 3 – ADVISOR: Structured LLM output with strict Pydantic validation."""
     try:
         waste = json.dumps(report.appliance_waste_scores[:8], default=str)
+        schema_json = json.dumps(RecommendationList.model_json_schema())
         response = await _call_openai_with_retry(
             model=MODEL,
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {
+                    "role": "system", 
+                    "content": f"{SYSTEM_PROMPT}\n\nYou MUST output exactly in this JSON schema:\n{schema_json}"
+                },
                 {
                     "role": "user",
                     "content": (
@@ -527,14 +486,20 @@ async def run_advisor_agent(report: AnalystReport) -> list[Recommendation]:
                     ),
                 },
             ],
-            response_format=ADVISOR_SCHEMA,
+            response_format={"type": "json_object"},
         )
         raw = response.choices[0].message.content
-        data = json.loads(raw)
-        return [Recommendation(**r) for r in data["recommendations"]]
+        try:
+            parsed = RecommendationList.model_validate_json(raw)
+            return parsed.recommendations
+        except ValidationError as ve:
+            logger.error(f"Validation failed for Advisor output:\n{raw}\nError: {ve}")
+            raise HTTPException(status_code=502, detail="AI response validation failed for Recommendations")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.warning(f"AI generation failed for Advisor: {e}")
-        return _local_advisor(report)
+        raise HTTPException(status_code=502, detail="AI generation failed for Recommendations")
 
 
 # ---------------------------------------------------------------------------
