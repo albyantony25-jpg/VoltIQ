@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: Optional[str] = None
     OPENAI_API_KEY: Optional[str] = None
     GROQ_API_KEY: Optional[str] = None
-    ADMIN_SECRET: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4o"
     JWT_SECRET: str
     ALLOWED_ORIGINS: str | List[str] = "http://localhost:3000"

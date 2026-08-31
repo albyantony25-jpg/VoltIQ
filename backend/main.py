@@ -18,7 +18,7 @@ from core.security import close_auth_client
 
 from routers import (
     homes, appliances, simulation, billing, insights,
-    chat, reports, alerts, analytics, demo, tariffs, users, admin
+    chat, reports, alerts, analytics, demo, tariffs, users
 )
 
 
@@ -133,10 +133,6 @@ app.include_router(analytics.router, prefix=api_prefix)
 app.include_router(demo.router, prefix=api_prefix)
 app.include_router(tariffs.router, prefix=api_prefix)
 app.include_router(users.router, prefix=api_prefix)
-
-if settings.ADMIN_SECRET:
-    app.include_router(admin.router, prefix=api_prefix)
-
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
