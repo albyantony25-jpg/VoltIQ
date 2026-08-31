@@ -34,7 +34,15 @@ def _get_client() -> AsyncGroq:
     import os
     return AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
 
-MODEL = "llama-3.3-70b-versatile"
+MODEL_COMPLEX = "llama-3.3-70b-versatile"
+MODEL_SIMPLE = "llama-3.1-8b-instant"
+
+def classify_query_complexity(message: str) -> str:
+    complex_keywords = ["forecast", "predict", "analyze", "why", "how much", "compare", "recommend", "save", "calculate"]
+    msg_lower = message.lower()
+    if len(msg_lower.split()) > 20 or any(k in msg_lower for k in complex_keywords):
+        return MODEL_COMPLEX
+    return MODEL_SIMPLE
 
 # ---------------------------------------------------------------------------
 # Functions array for GPT-4o
@@ -316,8 +324,10 @@ End every response with exactly 1 actionable next step."""
             # Send initial session id so client can attach to it
             yield f'data: {json.dumps({"session_id": str(session_id), "type": "meta"})}\n\n'
 
+            selected_model = classify_query_complexity(body.message)
+
             stream = await client.chat.completions.create(
-                model=MODEL,
+                model=selected_model,
                 messages=messages,
                 stream=True,
                 tools=CHAT_TOOLS,
@@ -375,7 +385,7 @@ End every response with exactly 1 actionable next step."""
                 
                 # Second stream for final answer
                 stream2 = await client.chat.completions.create(
-                    model=MODEL,
+                    model=selected_model,
                     messages=messages,
                     stream=True,
                     temperature=0.7,
@@ -401,7 +411,7 @@ End every response with exactly 1 actionable next step."""
                     await conn.execute(
                         """INSERT INTO ai_logs (endpoint, prompt_version, system_prompt, user_input, raw_response, model, latency_ms)
                            VALUES ($1, 'v1', $2, $3, $4, $5, $6)""",
-                        "chat", system_prompt, body.message, full_reply, MODEL, latency_ms
+                        "chat", system_prompt, body.message, full_reply, selected_model, latency_ms
                     )
 
             yield "data: [DONE]\n\n"
