@@ -43,60 +43,41 @@ CHAT_TOOLS = [
     {
         "type": "function",
         "function": {
-            "name": "get_appliance_details",
-            "description": "Get wattage and usage details for a specific appliance.",
+            "name": "get_bill_breakdown",
+            "description": "Get bill breakdown for a specific month.",
             "parameters": {
                 "type": "object",
-                "properties": {"name": {"type": "string"}},
-                "required": ["name"]
+                "properties": {"month": {"type": "string", "description": "e.g., '2026-08'"}},
+                "required": ["month"]
             }
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "calculate_savings_if",
-            "description": "Calculate potential INR savings if an action is taken on an appliance.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "appliance_name": {"type": "string"},
-                    "action": {"type": "string", "description": "e.g., 'reduce usage by 2 hours', 'replace with 5-star', 'unplug'"}
-                },
-                "required": ["appliance_name", "action"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "compare_with_peers",
-            "description": "Compare home baseline metric against regional peers.",
-            "parameters": {
-                "type": "object",
-                "properties": {"metric": {"type": "string", "description": "e.g., 'monthly_kwh', 'co2'"}},
-                "required": ["metric"]
-            }
-        }
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "forecast_remaining_bill",
-            "description": "Get estimated bill cost for the remainder of the current month.",
+            "name": "get_appliance_usage",
+            "description": "Get total rated wattage and appliance list for the home.",
             "parameters": {"type": "object", "properties": {}}
         }
     },
     {
         "type": "function",
         "function": {
-            "name": "get_tips_for_category",
-            "description": "Fetch generic energy saving tips for a category.",
+            "name": "compare_tariffs",
+            "description": "Compare average fixed charges across states.",
             "parameters": {
                 "type": "object",
-                "properties": {"category": {"type": "string", "description": "e.g., 'hvac', 'kitchen', 'lighting'"}},
-                "required": ["category"]
+                "properties": {"state": {"type": "string"}},
+                "required": ["state"]
             }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_recent_alerts",
+            "description": "Get recent anomalies/alerts for the home.",
+            "parameters": {"type": "object", "properties": {}}
         }
     }
 ]
@@ -166,18 +147,37 @@ async def save_chat_session(db_pool: asyncpg.Pool, session_id: uuid.UUID, user_i
 # ---------------------------------------------------------------------------
 # Tool mocking logic (In production, wire to real services)
 # ---------------------------------------------------------------------------
-def execute_tool(name: str, args: dict) -> str:
-    if name == "get_appliance_details":
-        return f"Appliance {args.get('name')} consumes approx 18% of total household energy on average."
-    elif name == "calculate_savings_if":
-        return f"Taking action '{args.get('action')}' on appliance {args.get('appliance_name')} would save roughly ₹850 annually."
-    elif name == "compare_with_peers":
-        return f"Your {args.get('metric')} is 12% lower than similar homes in your area."
-    elif name == "forecast_remaining_bill":
-        return "You are on track to spend ₹2,600 this month, which is ₹400 below your average."
-    elif name == "get_tips_for_category":
-        return f"For '{args.get('category')}', regular maintenance and running during off-peak hours yield the highest savings."
-    return "Tool execution successful but yielded no new data."
+async def execute_tool(name: str, args: dict, home_id: uuid.UUID, db: asyncpg.Pool) -> str:
+    if not db:
+        return "Database unavailable."
+    try:
+        async with db.acquire() as conn:
+            if name == "get_bill_breakdown":
+                row = await conn.fetchrow("SELECT units_consumed, total_amount_inr FROM bills WHERE home_id = $1 AND billing_month = $2", home_id, args.get("month"))
+                if row:
+                    return f"Bill for {args.get('month')}: {row['units_consumed']} kWh, ₹{row['total_amount_inr']}."
+                return f"No bill found for {args.get('month')}."
+            elif name == "get_appliance_usage":
+                rows = await conn.fetch("SELECT name, rated_watts FROM appliances WHERE home_id = $1 AND is_active = true", home_id)
+                if rows:
+                    total = sum(r['rated_watts'] for r in rows)
+                    apps = ", ".join([f"{r['name']} ({r['rated_watts']}W)" for r in rows])
+                    return f"Total rated wattage: {total}W. Appliances: {apps}."
+                return "No active appliances found."
+            elif name == "compare_tariffs":
+                st = args.get("state", "Kerala")
+                avg = await conn.fetchval("SELECT AVG(fixed_charge_inr) FROM tariffs WHERE state = $1", st)
+                return f"Average fixed charge in {st} is ₹{avg:.2f}." if avg else "No data for this state."
+            elif name == "get_recent_alerts":
+                rows = await conn.fetch("SELECT title, priority FROM alerts WHERE home_id = $1 AND is_read = false ORDER BY created_at DESC LIMIT 3", home_id)
+                if rows:
+                    alerts = ", ".join([f"[{r['priority']}] {r['title']}" for r in rows])
+                    return f"Unread alerts: {alerts}"
+                return "No unread alerts."
+    except Exception as e:
+        logger.error(f"Tool {name} failed: {e}")
+        return f"Error executing {name}."
+    return "Unknown tool."
 
 # ---------------------------------------------------------------------------
 # Routes
@@ -314,32 +314,79 @@ End every response with exactly 1 actionable next step."""
             # Send initial session id so client can attach to it
             yield f'data: {json.dumps({"session_id": str(session_id), "type": "meta"})}\n\n'
 
-            # Call Groq WITHOUT tools to avoid raw tool-call JSON leaking into the UI.
-            # The home context is already injected into the system prompt so the model
-            # has everything it needs to answer naturally.
             stream = await client.chat.completions.create(
                 model=MODEL,
                 messages=messages,
                 stream=True,
+                tools=CHAT_TOOLS,
+                tool_choice="auto",
                 temperature=0.7,
                 max_tokens=600
             )
 
             full_reply = ""
+            tool_calls_buffer = {}
 
             async for chunk in stream:
                 if await request.is_disconnected():
                     break
-
                 if not getattr(chunk, "choices", None):
                     continue
 
                 delta = chunk.choices[0].delta
 
-                # Text content emission only
-                if getattr(delta, "content", None):
+                if getattr(delta, "tool_calls", None):
+                    for tc in delta.tool_calls:
+                        if tc.index not in tool_calls_buffer:
+                            tool_calls_buffer[tc.index] = {"id": tc.id, "function": {"name": tc.function.name, "arguments": ""}}
+                        if tc.function.arguments:
+                            tool_calls_buffer[tc.index]["function"]["arguments"] += tc.function.arguments
+                            
+                elif getattr(delta, "content", None):
                     full_reply += delta.content
                     yield f'data: {json.dumps({"token": delta.content})}\n\n'
+
+            if tool_calls_buffer:
+                formatted_tcs = []
+                for _, tc in tool_calls_buffer.items():
+                    formatted_tcs.append({
+                        "id": tc["id"],
+                        "type": "function",
+                        "function": {"name": tc["function"]["name"], "arguments": tc["function"]["arguments"]}
+                    })
+                
+                messages.append({"role": "assistant", "content": full_reply or None, "tool_calls": formatted_tcs})
+                
+                for tc in formatted_tcs:
+                    fn_name = tc["function"]["name"]
+                    try:
+                        args = json.loads(tc["function"]["arguments"])
+                    except Exception:
+                        args = {}
+                    result = await execute_tool(fn_name, args, body.home_id, db)
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tc["id"],
+                        "name": fn_name,
+                        "content": str(result)
+                    })
+                
+                # Second stream for final answer
+                stream2 = await client.chat.completions.create(
+                    model=MODEL,
+                    messages=messages,
+                    stream=True,
+                    temperature=0.7,
+                    max_tokens=600
+                )
+                
+                async for chunk in stream2:
+                    if await request.is_disconnected(): break
+                    if not getattr(chunk, "choices", None): continue
+                    delta = chunk.choices[0].delta
+                    if getattr(delta, "content", None):
+                        full_reply += delta.content
+                        yield f'data: {json.dumps({"token": delta.content})}\n\n'
 
             # Save ONLY the final clean text to DB — no tool call stubs
             new_db_messages.append({"role": "assistant", "content": full_reply})
