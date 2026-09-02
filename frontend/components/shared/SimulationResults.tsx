@@ -31,7 +31,7 @@ export const SimulationResults = ({ result, isSimulating }: { result: any, isSim
                         <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-300">Net Impact</h3>
                     </div>
                     <div className="flex items-baseline gap-2">
-                        <span className={`text-3xl font-bold ${isSaving ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        <span className={`text-3xl font-medium tabular-nums ${isSaving ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {isSaving ? '-' : '+'}₹{Math.abs(result.delta.money_saved_inr)}
                         </span>
                         <span className="text-slate-500 text-sm">/ month</span>
@@ -43,7 +43,7 @@ export const SimulationResults = ({ result, isSimulating }: { result: any, isSim
                         <div>
                             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-2">Carbon Avoided</h3>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-2xl font-bold text-teal-400">{result.delta.co2_saved_kg} kg</span>
+                                <span className="text-2xl font-medium text-teal-400 tabular-nums">{result.delta.co2_saved_kg} kg</span>
                             </div>
                         </div>
                         <TreePine className="w-8 h-8 text-teal-500/50" />
@@ -55,9 +55,9 @@ export const SimulationResults = ({ result, isSimulating }: { result: any, isSim
                         <div>
                             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-2">Efficiency Score</h3>
                             <div className="flex items-center gap-3">
-                                <span className="text-2xl font-bold text-white">{result.simulated.efficiency_score}</span>
+                                <span className="text-2xl font-medium text-foreground tabular-nums">{result.simulated.efficiency_score}</span>
                                 {isScoreImproving && (
-                                    <span className="flex items-center text-emerald-400 text-sm bg-emerald-500/10 px-2 py-1 rounded">
+                                    <span className="flex items-center text-emerald-400 text-sm bg-emerald-500/10 px-2 py-1 rounded tabular-nums">
                                         <ArrowUp className="w-3 h-3 mr-1" /> {result.delta.score_improvement}
                                     </span>
                                 )}
@@ -75,11 +75,11 @@ export const SimulationResults = ({ result, isSimulating }: { result: any, isSim
                     <div className="space-y-4">
                         <div className="flex justify-between border-b border-slate-800 pb-2">
                             <span className="text-slate-500 text-sm">Monthly Consumption</span>
-                            <span className="text-white font-medium">{result.baseline.monthly_kwh} kWh</span>
+                            <span className="text-foreground font-medium tabular-nums">{result.baseline.monthly_kwh} kWh</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-500 text-sm">Estimated Bill</span>
-                            <span className="text-white font-medium">₹{result.baseline.monthly_bill_inr}</span>
+                            <span className="text-foreground font-medium tabular-nums">₹{result.baseline.monthly_bill_inr}</span>
                         </div>
                     </div>
                 </div>
@@ -90,11 +90,11 @@ export const SimulationResults = ({ result, isSimulating }: { result: any, isSim
                     <div className="space-y-4">
                         <div className="flex justify-between border-b border-indigo-500/20 pb-2">
                             <span className="text-slate-400 text-sm">Monthly Consumption</span>
-                            <span className="text-white font-bold">{result.simulated.monthly_kwh} kWh</span>
+                            <span className="text-foreground font-medium tabular-nums">{result.simulated.monthly_kwh} kWh</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-slate-400 text-sm">Estimated Bill</span>
-                            <span className="text-white font-bold">₹{result.simulated.monthly_bill_inr}</span>
+                            <span className="text-foreground font-medium tabular-nums">₹{result.simulated.monthly_bill_inr}</span>
                         </div>
                     </div>
                 </div>

@@ -86,9 +86,9 @@ export function TopNav() {
     }
 
     return (
-        <div className="w-full h-16 bg-slate-950/50 backdrop-blur-md border-b border-slate-800 flex items-center justify-between px-6 sticky top-0 z-50">
+        <div className="w-full h-16 bg-background/80 backdrop-blur-md border-b border-border flex items-center justify-between px-6 sticky top-0 z-50">
             <div className="flex items-center gap-2">
-                <span className="text-slate-200 font-semibold text-lg">My Dashboard</span>
+                <span className="text-foreground font-semibold text-lg">My Dashboard</span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE</span>
             </div>
 
@@ -96,7 +96,7 @@ export function TopNav() {
                 {/* Dev Cron Trigger */}
                 <button
                     onClick={() => runCronMutation.mutate()}
-                    className="text-xs text-slate-500 hover:text-slate-300 transition-colors uppercase font-bold tracking-wider"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase font-bold tracking-wider"
                     title="Simulate backend cron job scanning for anomalies"
                 >
                     Run Scan
@@ -105,9 +105,9 @@ export function TopNav() {
                 {/* Notifications Bell */}
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="relative p-2 rounded-full hover:bg-slate-800 transition-colors"
+                    className="relative p-2 rounded-full hover:bg-muted transition-colors"
                 >
-                    <Bell className="h-5 w-5 text-slate-300" />
+                    <Bell className="h-5 w-5 text-muted-foreground" />
                     {unreadCount > 0 && (
                         <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-slate-950 rounded-full animate-pulse"></span>
                     )}
@@ -115,11 +115,11 @@ export function TopNav() {
 
                 {/* Dropdown Panel */}
                 {isOpen && (
-                    <div className="absolute top-12 right-0 w-80 md:w-96 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
-                        <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+                    <div className="absolute top-12 right-0 w-80 md:w-96 bg-popover border border-border rounded-xl shadow-2xl overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
+                        <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
                             <div>
-                                <h3 className="font-bold text-white leading-none">Notifications</h3>
-                                <p className="text-xs text-slate-500 mt-1">{unreadCount} unread alerts</p>
+                                <h3 className="font-bold text-popover-foreground leading-none">Notifications</h3>
+                                <p className="text-xs text-muted-foreground mt-1">{unreadCount} unread alerts</p>
                             </div>
                             {unreadCount > 0 && (
                                 <button
@@ -141,24 +141,19 @@ export function TopNav() {
                                     transition={{ duration: 0.3 }}
                                     className="p-10 text-center flex flex-col items-center relative overflow-hidden"
                                 >
-                                    {/* SVG Checkmark Empty State */}
-                                    <div className="relative mb-5 w-24 h-24 flex items-center justify-center">
-                                        <div className="absolute inset-0 bg-emerald-500/10 blur-2xl rounded-full"></div>
-                                        <svg width="100" height="100" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative">
-                                            <circle cx="60" cy="60" r="45" fill="#064e3b" fillOpacity="0.4" stroke="#10b981" strokeWidth="2" strokeDasharray="4 4" className={prefersReducedMotion ? "" : "animate-[spin_20s_linear_infinite]"} />
-                                            <circle cx="60" cy="60" r="35" fill="#022c22" stroke="#059669" strokeWidth="4" />
-                                            <path d="M42 63L54 75L80 45" stroke="#34d399" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" className={prefersReducedMotion ? "" : "animate-[draw_1s_ease-out_forwards]"} strokeDasharray="100" strokeDashoffset="0" />
-                                        </svg>
+                                    {/* Simplified Empty State */}
+                                    <div className="relative mb-5 flex items-center justify-center">
+                                        <CheckCircle2 className="w-12 h-12 text-emerald-500/50" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-slate-200 mb-1">All Clear!</h3>
-                                    <p className="text-sm text-slate-400">No active anomalies detected.</p>
+                                    <h3 className="text-lg font-bold text-foreground mb-1">All Clear!</h3>
+                                    <p className="text-sm text-muted-foreground">No active anomalies detected.</p>
                                 </motion.div>
                             ) : (
-                                <div className="divide-y divide-slate-800/50">
+                                <div className="divide-y divide-border/50">
                                     {alerts.map((alert: any) => (
                                         <div
                                             key={alert.id}
-                                            className={`p-4 hover:bg-slate-800/50 transition-colors cursor-pointer flex gap-3 ${!alert.is_read ? 'bg-indigo-500/5' : 'opacity-70'}`}
+                                            className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer flex gap-3 ${!alert.is_read ? 'bg-primary/5' : 'opacity-70'}`}
                                             onClick={() => {
                                                 if (!alert.is_read) markReadMutation.mutate(alert.id);
                                             }}
@@ -168,14 +163,14 @@ export function TopNav() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start mb-1">
-                                                    <h4 className={`text-sm font-semibold truncate ${!alert.is_read ? 'text-slate-200' : 'text-slate-400'}`}>
+                                                    <h4 className={`text-sm font-semibold truncate ${!alert.is_read ? 'text-foreground' : 'text-muted-foreground'}`}>
                                                         {alert.title}
                                                     </h4>
-                                                    <span className="text-[10px] text-slate-500 whitespace-nowrap ml-2">
+                                                    <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2">
                                                         {formatDistanceToNow(new Date(alert.triggered_at), { addSuffix: true })}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                                                     {alert.message}
                                                 </p>
                                             </div>

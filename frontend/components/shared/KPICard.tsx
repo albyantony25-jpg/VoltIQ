@@ -87,7 +87,7 @@ export function KPICard({ title, value, unit, change_pct, change_direction, icon
 
                 <CardContent className="p-6">
                     <div className="flex justify-between items-start mb-4">
-                        <p className="text-sm font-medium text-slate-400">{title}</p>
+                        <p className="text-sm font-medium text-muted-foreground">{title}</p>
                         <motion.div
                             className="p-2 rounded-lg bg-slate-800/80 text-slate-300"
                             animate={{ backgroundColor: isHovered ? "rgba(51, 65, 85, 0.9)" : "rgba(30, 41, 59, 0.8)" }}
@@ -98,17 +98,17 @@ export function KPICard({ title, value, unit, change_pct, change_direction, icon
 
                     <div className="flex flex-col gap-2">
                         <div className="flex items-baseline gap-1">
-                            <h3 className="text-3xl font-bold tracking-tight text-slate-50">{displayValue}</h3>
-                            {unit && <span className="text-sm font-semibold text-slate-500">{unit}</span>}
+                            <h3 className="text-3xl font-medium tracking-tight text-foreground tabular-nums">{displayValue}</h3>
+                            {unit && <span className="text-sm font-medium text-muted-foreground">{unit}</span>}
                         </div>
 
                         {change_pct !== undefined && change_direction && (
                             <div className="flex items-center gap-2 mt-1">
-                                <span className={`inline-flex items-center text-xs font-semibold px-1.5 py-0.5 rounded ${bgColor} ${arrowColor}`}>
+                                <span className={`inline-flex items-center text-xs font-medium tabular-nums px-1.5 py-0.5 rounded ${bgColor} ${arrowColor}`}>
                                     {change_direction === 'up' ? <ArrowUp className="w-3 h-3 mr-0.5" /> : <ArrowDown className="w-3 h-3 mr-0.5" />}
                                     {change_pct}%
                                 </span>
-                                <span className="text-xs text-slate-500">vs last month</span>
+                                <span className="text-xs text-muted-foreground">vs last month</span>
                             </div>
                         )}
                     </div>

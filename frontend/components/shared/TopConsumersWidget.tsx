@@ -58,14 +58,14 @@ export function TopConsumersWidget({ data }: TopConsumersWidgetProps) {
                                             style={{ width: `${Math.max(5, (item.kwh / maxKwh) * 100)}%` }}
                                         />
                                     </div>
-                                    <span className="text-[10px] font-mono text-slate-500 w-16 text-right shrink-0">
+                                    <span className="text-[10px] font-mono tabular-nums text-muted-foreground w-16 text-right shrink-0">
                                         {item.kwh.toFixed(1)} kWh
                                     </span>
                                 </div>
                             </div>
 
                             <div className="flex-shrink-0 text-right">
-                                <p className="text-sm font-bold text-slate-300">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
+                                <p className="text-sm font-medium tabular-nums text-foreground">₹{item.cost.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
                             </div>
                         </div>
                     ))}

@@ -109,7 +109,7 @@ function SidebarProfile({ user }: { user: any }) {
     const initials = user.email ? user.email.substring(0, 2).toUpperCase() : 'U';
 
     return (
-        <div id="sidebar-profile" className="relative border-t border-[#1a1a1a] p-3 md:p-2 lg:p-4 mt-auto">
+        <div id="sidebar-profile" className="relative border-t border-border p-3 md:p-2 lg:p-4 mt-auto">
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-secondary/50 transition-colors text-left"

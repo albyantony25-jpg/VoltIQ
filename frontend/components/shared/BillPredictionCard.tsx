@@ -67,12 +67,12 @@ export function BillPredictionCard({ projected_amount, projected_units, confiden
                 <div className="mt-6 mb-8">
                     <p className="text-slate-400 text-sm mb-1">Month-End Projection</p>
                     <div className="flex items-baseline gap-2">
-                        <span className="text-5xl font-bold tracking-tight text-white">
+                        <span className="text-5xl font-medium tracking-tight text-foreground tabular-nums">
                             ₹{displayAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                         </span>
-                        <span className="text-slate-500 font-mono text-sm">/ mo</span>
+                        <span className="text-muted-foreground font-mono text-sm">/ mo</span>
                     </div>
-                    <p className="text-sm text-slate-400 mt-3 font-mono">
+                    <p className="text-sm text-muted-foreground mt-3 font-mono tabular-nums">
                         ~{Math.round(projected_units)} kWh expected usage
                     </p>
                 </div>
@@ -80,7 +80,7 @@ export function BillPredictionCard({ projected_amount, projected_units, confiden
                 <div className="space-y-3 bg-black/20 p-4 rounded-xl border border-white/5">
                     <div className="flex justify-between items-end mb-1">
                         <span className="text-xs text-slate-400 font-medium tracking-wide uppercase">Confidence Score</span>
-                        <span className="text-xs font-mono text-indigo-300">{confidencePct}%</span>
+                        <span className="text-xs font-mono tabular-nums text-indigo-300">{confidencePct}%</span>
                     </div>
                     <div className="w-full h-1.5 bg-slate-800/50 rounded-full overflow-hidden">
                         <div
@@ -88,7 +88,7 @@ export function BillPredictionCard({ projected_amount, projected_units, confiden
                             style={{ width: `${confidencePct}%` }}
                         ></div>
                     </div>
-                    <div className="flex justify-between text-xs text-slate-500 font-mono pt-1">
+                    <div className="flex justify-between text-xs text-muted-foreground font-mono tabular-nums pt-1">
                         <span>Range: ₹{Math.round(range_low).toLocaleString('en-IN')}</span>
                         <span>₹{Math.round(range_high).toLocaleString('en-IN')}</span>
                     </div>

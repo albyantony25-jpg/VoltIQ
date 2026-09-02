@@ -81,7 +81,7 @@ export function HomeScoreGauge({ score, subscores }: HomeScoreGaugeProps) {
                     </svg>
                     {/* Inner Text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center mt-2">
-                        <span className="text-6xl font-black text-white tracking-tighter" style={{ textShadow: `0 0 20px ${color}40` }}>
+                        <span className="text-6xl font-medium text-foreground tracking-tighter tabular-nums" style={{ textShadow: `0 0 20px ${color}40` }}>
                             {score}
                         </span>
                         <div className="flex items-center gap-2 mt-1 -ml-1">
@@ -100,7 +100,7 @@ export function HomeScoreGauge({ score, subscores }: HomeScoreGaugeProps) {
                     ].map((item, i) => (
                         <div key={i} className="bg-slate-900/80 border border-slate-800/80 p-3 rounded-lg flex flex-col items-center text-center">
                             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">{item.label}</span>
-                            <span className="text-lg font-bold text-slate-200">{item.val}</span>
+                            <span className="text-lg font-medium text-foreground tabular-nums">{item.val}</span>
                             <div className="w-full h-1 bg-slate-800 mt-2 rounded-full overflow-hidden">
                                 <div
                                     className="h-full bg-slate-400 rounded-full"

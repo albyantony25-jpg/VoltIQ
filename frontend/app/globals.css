@@ -38,79 +38,75 @@
 
 @layer base {
   :root {
-    /* Pure White Background */
     --background: 0 0% 100%;
-    /* Pure Black Foreground */
-    --foreground: 0 0% 0%;
-
+    --foreground: 216 33% 6%;
+    
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-
+    --card-foreground: 216 33% 6%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-
-    /* Primary buttons: Pure Black */
-    --primary: 0 0% 0%;
+    --popover-foreground: 216 33% 6%;
+    
+    --primary: 216 33% 6%;
     --primary-foreground: 0 0% 100%;
-
-    /* Secondary/Muted: Soft Grey */
-    --secondary: 198 19% 89%;
-    --secondary-foreground: 0 0% 0%;
-
-    --muted: 198 19% 89%;
-    --muted-foreground: 200 10% 40%;
-
-    /* Accent: Gold */
-    --accent: 45 93% 47%;
-    --accent-foreground: 0 0% 0%;
-
+    
+    --secondary: 214 26% 96%;
+    --secondary-foreground: 216 33% 6%;
+    
+    --muted: 214 26% 96%;
+    --muted-foreground: 215 15% 45%;
+    
+    --accent: 35 73% 62%;
+    --accent-foreground: 216 33% 6%;
+    
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-
-    /* Borders and Rings */
-    --border: 198 19% 89%;
-    --input: 198 19% 89%;
-    --ring: 45 93% 47%;
-
+    
+    --border: 214 26% 90%;
+    --input: 214 26% 90%;
+    --ring: 35 73% 62%;
+    
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Pure Black Background */
-    --background: 0 0% 0%;
-    /* Soft Off-White Text */
-    --foreground: 0 0% 98%;
-
-    /* Very Dark, Subtle Gray Cards (#1C1C1E-ish) */
-    --card: 240 5% 10%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 5% 10%;
-    --popover-foreground: 0 0% 98%;
-
+    /* Background: #0A0E14 */
+    --background: 216 33% 6%;
+    /* Text primary: #E8ECF1 */
+    --foreground: 213 24% 93%;
+    
+    /* Surface: #121821 */
+    --card: 216 29% 10%;
+    --card-foreground: 213 24% 93%;
+    
+    --popover: 216 29% 10%;
+    --popover-foreground: 213 24% 93%;
+    
     /* Primary buttons: Sleek White (Apple-style) */
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-
-    /* Secondary: Muted Gray */
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-
-    /* Accent: Subtle Slate Gray */
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-
-    /* Destructive: Muted Red */
+    --primary: 213 24% 93%;
+    --primary-foreground: 216 33% 6%;
+    
+    /* Secondary / Sub-surface: #1E2733 */
+    --secondary: 214 26% 16%;
+    --secondary-foreground: 213 24% 93%;
+    
+    --muted: 214 26% 16%;
+    /* Text muted: #8B96A5 */
+    --muted-foreground: 215 15% 60%;
+    
+    /* Accent: Warm Gold #E3A857 */
+    --accent: 35 73% 62%;
+    --accent-foreground: 216 33% 6%;
+    
+    /* Semantic states */
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    /* Ring: Muted Silver/Gray */
-    --ring: 240 4.9% 83.9%;
+    --destructive-foreground: 213 24% 93%;
+    
+    /* Border: #1E2733 */
+    --border: 214 26% 16%;
+    --input: 214 26% 16%;
+    /* Ring: Warm Gold */
+    --ring: 35 73% 62%;
   }
 }
 
