@@ -97,7 +97,7 @@ const LivePowerMeter = ({ appliances }: { appliances: any[] }) => {
   const max = Math.max(baseWatts * 2, 5)
 
   return (
-    <div className="flex flex-col items-center justify-between border border-border rounded-xl bg-card p-6 w-full lg:w-1/3 min-h-[240px]">
+    <div className="flex flex-col items-center justify-between border border-border rounded-xl bg-card p-6 w-full sm:w-[40%] lg:w-1/3 min-h-[240px]">
       <div className="flex w-full justify-between items-start mb-6">
         <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Live Draw</p>
       </div>
@@ -123,12 +123,11 @@ const LiveHourlyChart = ({ appliances }: { appliances: any[] }) => {
   const totalKw = appliances.reduce((sum, a) => sum + (a.rated_watts * (a.load_factor || 0.85)), 0) / 1000
 
   const generateHourlyData = () => {
-    const now = new Date()
-    const currentHour = now.getHours()
+    const currentHour = new Date().getHours()
     const usagePattern = [0.3,0.2,0.2,0.2,0.3,0.5,0.8,1.0,0.9,0.8,0.7,0.8,0.9,0.8,0.7,0.7,0.8,1.0,1.1,1.0,0.9,0.8,0.6,0.4]
-    return Array.from({ length: currentHour + 1 }, (_, i) => ({
+    return Array.from({ length: 24 }, (_, i) => ({
       hour: `${i}:00`,
-      kw: +(totalKw * usagePattern[i] * (0.9 + Math.random() * 0.2)).toFixed(2)
+      kw: i <= currentHour ? +(totalKw * usagePattern[i] * (0.9 + Math.random() * 0.2)).toFixed(2) : null
     }))
   }
 
@@ -137,33 +136,42 @@ const LiveHourlyChart = ({ appliances }: { appliances: any[] }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setData(prev => {
-        const last = prev[prev.length - 1]
-        return [...prev.slice(0, -1), { ...last, kw: +(last.kw + (Math.random() - 0.5) * 0.1).toFixed(2) }]
+        const currentHour = new Date().getHours()
+        const newArray = [...prev]
+        const currentKw = newArray[currentHour]?.kw
+        if (currentKw !== null && currentKw !== undefined) {
+           newArray[currentHour] = { ...newArray[currentHour], kw: +(currentKw + (Math.random() - 0.5) * 0.1).toFixed(2) }
+        }
+        return newArray
       })
     }, 2000)
     return () => clearInterval(interval)
   }, [])
+
+  const hasOnePoint = data.filter(d => d.kw !== null).length === 1;
 
   return (
     <div className="flex-1 border border-border rounded-xl bg-card p-6 min-w-0 min-h-[240px] flex flex-col justify-between">
       <div className="flex items-center justify-between mb-6">
         <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">Today's Usage</p>
       </div>
-      <div className="flex-1 -ml-4">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data}>
-            <defs>
-              <linearGradient id="kwGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.2}/>
-                <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <XAxis dataKey="hour" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd"/>
-            <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickLine={false} axisLine={false} width={35} />
-            <Tooltip content={<ChartTooltip unit="kW" />} cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1, strokeDasharray: '4 4' }} />
-            <Area type="monotone" name="Power Draw" dataKey="kw" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#kwGradient)" dot={false} isAnimationActive={false}/>
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="flex-1 -ml-4 min-h-0 relative">
+        <div className="absolute inset-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="kwGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.2}/>
+                  <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="hour" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={20} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} tickLine={false} axisLine={false} width={35} />
+              <Tooltip content={<ChartTooltip unit="kW" />} cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1, strokeDasharray: '4 4' }} />
+              <Area type="monotone" name="Power Draw" dataKey="kw" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#kwGradient)" dot={hasOnePoint ? { r: 4, fill: "hsl(var(--accent))", strokeWidth: 0 } : false} isAnimationActive={false}/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
   )
